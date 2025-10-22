@@ -31,3 +31,12 @@
 /media/MonoGame/Sharpon/Sharpon/obj/Debug/net8.0/Sharpon.pdb
 /media/MonoGame/Sharpon/Sharpon/obj/Debug/net8.0/Sharpon.genruntimeconfig.cache
 /media/MonoGame/Sharpon/Sharpon/obj/Debug/net8.0/ref/Sharpon.dll
+/media/MonoGame/Sharpon/Sharpon/obj/Debug/net8.0/Sharpon.sourcelink.json
+/media/MonoGame/Sharpon/Sharpon/bin/Debug/net8.0/Cyotek.Drawing.BitmapFont.dll
+/media/MonoGame/Sharpon/Sharpon/bin/Debug/net8.0/FontStashSharp.Base.dll
+/media/MonoGame/Sharpon/Sharpon/bin/Debug/net8.0/FontStashSharp.MonoGame.dll
+/media/MonoGame/Sharpon/Sharpon/bin/Debug/net8.0/FontStashSharp.Rasterizers.StbTrueTypeSharp.dll
+/media/MonoGame/Sharpon/Sharpon/bin/Debug/net8.0/StbImageSharp.dll
+/media/MonoGame/Sharpon/Sharpon/bin/Debug/net8.0/StbTrueTypeSharp.dll
+/media/MonoGame/Sharpon/Sharpon/bin/Debug/net8.0/InputManagerPackage.dll
+/media/MonoGame/Sharpon/Sharpon/bin/Debug/net8.0/MonoGame.Extended.dll

@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.IO;
+using FontStashSharp;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -14,11 +17,19 @@ public class Game1 : Game
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+
+        TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 180.0);
+        _graphics.SynchronizeWithVerticalRetrace = false;
+        IsFixedTimeStep = false;
+
+        _graphics.ApplyChanges();
+
+        Window.AllowUserResizing = true;
     }
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
+        Updater.Start(Window);
 
         base.Initialize();
     }
@@ -26,16 +37,15 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-        // TODO: use this.Content to load your game content here
     }
 
     protected override void Update(GameTime gameTime)
     {
+        Updater.Update(gameTime);
+
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        // TODO: Add your update logic here
 
         base.Update(gameTime);
     }
@@ -43,9 +53,11 @@ public class Game1 : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
+        _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
 
-        // TODO: Add your drawing code here
+        Updater.Draw(_spriteBatch);
 
+        _spriteBatch.End();
         base.Draw(gameTime);
     }
 }
