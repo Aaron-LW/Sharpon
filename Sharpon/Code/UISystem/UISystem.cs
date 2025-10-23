@@ -4,8 +4,8 @@ using Microsoft.Xna.Framework.Input;
 using FontStashSharp;
 using System.IO;
 using System;
-using MonoGame.Extended.Graphics;
 using System.Collections.Generic;
+using System.Text;
 
 public static class UISystem
 {
@@ -16,6 +16,7 @@ public static class UISystem
     private static GameWindow _gameWindow;
     private static SimpleFps _fps = new SimpleFps();
     private static float _lineSpacing => (float)(1 * BaseFontSize);
+    private static Queue<char> _charQueue = new Queue<char>();
 
     public static List<string> Lines = new List<string>() { "" };
     public static int LineIndex = 0;
@@ -25,11 +26,18 @@ public static class UISystem
         string fontPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Fonts", "JetBrainsMonoNLNerdFont-Bold.ttf"));
         _fontSystem.AddFont(File.ReadAllBytes(fontPath));
         _gameWindow = gameWindow;
+        _gameWindow.TextInput += TextInputHandler;
     }
 
     public static void Update(GameTime gameTime)
     {
         _fps.Update(gameTime);
+        StringBuilder stringBuilder = new StringBuilder();
+        foreach (char? character in _charQueue)
+        {
+            stringBuilder.Append(character);
+        }
+        string pressedKeys = stringBuilder.ToString();
 
         if (Input.IsKeyDown(Keys.Right))
         {
@@ -70,9 +78,11 @@ public static class UISystem
             LineIndex++;
         }
 
-        Lines[LineIndex] = Input.GetPressedKeys(Lines[LineIndex]);
+        
+        Lines[LineIndex] += pressedKeys;
+        _charQueue.Clear();
     }
-    
+
     public static void Draw(SpriteBatch spriteBatch)
     {
         SpriteFontBase font = _fontSystem.GetFont(BaseFontSize * ScaleModifier);
@@ -87,5 +97,30 @@ public static class UISystem
 
         spriteBatch.DrawString(font, $"Lines: {Lines.Count}", new Vector2(150, 20) * ScaleModifier, Color.White);
         spriteBatch.DrawString(font, $"Current Line: {LineIndex}", new Vector2(250, 20) * ScaleModifier, Color.White);
+    }
+
+
+    private static void TextInputHandler(object sender, TextInputEventArgs e)
+    {
+        char c = e.Character;
+        if (char.IsControl(c))
+        {
+            if (c == '\b') HandleBackspace();
+            //else if (c == '\r' || c == '\n') HandleEnter();
+            //else if (c == '\t') HandleTab();
+            return;
+        }
+        else
+        {
+            _charQueue.Enqueue(e.Character);
+        }
+    }
+
+    private static void HandleBackspace()
+    {
+        if (Lines[LineIndex].Length > 0)
+        {
+            Lines[LineIndex] = Lines[LineIndex].Substring(0, Lines[LineIndex].Length - 1);
+        }
     }
 }
