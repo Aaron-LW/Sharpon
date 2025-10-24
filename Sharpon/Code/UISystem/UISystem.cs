@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection.Metadata;
 
 public static class UISystem
 {
@@ -22,6 +23,14 @@ public static class UISystem
     private static float _keyTimer = 0;
     private static bool _keyPressed = false;
     private static bool _blockQuotationMarks = false;
+    private static string _filePath = "/media/C#/test/Program.cs";
+    private static float _codeMaxY = 60;
+    private static Vector2 _codePosition = new Vector2(50, _codeMaxY);
+    private static Vector2 _cursorPosition;
+    private static float _textOpacity = 1;
+    private static bool _selectingFilePath = false;
+    private static string _selectedFilePath = "";
+    private static int _selectedCharIndex = 0;
 
     public static List<string> Lines = new List<string>() { "" };
     public static int LineIndex = 0;
@@ -30,10 +39,11 @@ public static class UISystem
         
     public static void Start(GameWindow gameWindow)
     {
-        string fontPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Fonts", "JetBrainsMonoNLNerdFont-Bold.ttf"));
+        string fontPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts", "JetBrainsMonoNLNerdFont-Bold.ttf"));
         _fontSystem.AddFont(File.ReadAllBytes(fontPath));
         _gameWindow = gameWindow;
         _gameWindow.TextInput += TextInputHandler;
+        LoadFile(_filePath);
     }
 
     public static void Update(GameTime gameTime)
@@ -46,6 +56,12 @@ public static class UISystem
         }
         string pressedKeys = stringBuilder.ToString();
         _charQueue.Clear();
+
+        if (Input.IsKeyPressed(Keys.LeftAlt))
+        {
+            Random random = new Random();
+            _textOpacity = (float)random.Next(0, 10) / 10;
+        }
 
 
         if (Input.IsKeyDown(Keys.Right) && _keyTimer <= 0)
@@ -90,21 +106,11 @@ public static class UISystem
                 int charIndex = CharIndex - 1;
                 if (Input.IsKeyDown(Keys.LeftControl))
                 {
-                    for (int i = CharIndex - 1; i > 0; i--)
+                    for (int i = CharIndex - 2; i > 0; i--)
                     {
-                        if (Lines[LineIndex][i] == ' ')
+                        if (Lines[LineIndex][i] == ' ' || Lines[LineIndex][i] == '.')
                         {
-                            while (Lines[LineIndex][i] == ' ' && i > 0)
-                            {
-                                i--;
-                            }
-
-                            if (i != 0)
-                            {
-                                i++;
-                            }
-
-                            charIndex = i;
+                            charIndex = i + 1;
                             break;
                         }
 
@@ -172,7 +178,7 @@ public static class UISystem
 
                 if (pressedKeys[i] == '#')
                 {
-                    LoadFile("/media/MonoGame/beemoviepart.txt");
+                    LoadFile(_filePath);
                 }
             }
 
@@ -183,12 +189,40 @@ public static class UISystem
                     Lines.RemoveAt(LineIndex);
                     SetCharIndex(CharIndex);
                 }
+                else
+                {
+                    Lines[0] = "";
+                    SetCharIndex(CharIndex);
+                }
 
                 ResetKeyTimer();
                 _keyPressed = true;
             }
 
+            if (Input.IsKeyPressed(Keys.S))
+            {
+                if (Input.IsKeyDown(Keys.LeftShift))
+                {
+                    SelectFilePath();
+                }
+                else
+                {
+                    SaveFile(_filePath);
+                }
+
+            }
+
             pressedKeys = String.Empty;
+        }
+
+        if (_codePosition.Y <= _codeMaxY)
+        {
+            _codePosition.Y = MathHelper.Lerp(_codePosition.Y, -(LineIndex * _lineSpacing) + (_gameWindow.ClientBounds.Height / 2), 12 * Time.DeltaTime);
+        }
+
+        if (_codePosition.Y > _codeMaxY)
+        {
+            _codePosition.Y = _codeMaxY;
         }
 
 
@@ -221,23 +255,31 @@ public static class UISystem
             }
         }
 
-        Lines[LineIndex] = Lines[LineIndex].Insert(CharIndex, pressedKeys);
-        CharIndex += pressedKeys.Length;
-
-        if (pressedKeys.Contains(')'))
+        if (!_selectingFilePath)
         {
-            CharIndex--;
-        }
+            Lines[LineIndex] = Lines[LineIndex].Insert(CharIndex, pressedKeys);
+            CharIndex += pressedKeys.Length;
+        
+            if (pressedKeys.Contains(')'))
+            {
+                CharIndex--;
+            }
 
-        if (pressedKeys.Contains('}'))
-        {
-            CharIndex--;
-        }
+            if (pressedKeys.Contains('}'))
+            {
+                CharIndex--;
+            }
 
-        if (pressedKeys.Contains(']'))
+            if (pressedKeys.Contains(']'))
+            {
+                CharIndex--;
+            }
+        } 
+        else
         {
-            CharIndex--;
-        }
+            _selectedFilePath = _selectedFilePath.Insert(_selectedCharIndex, pressedKeys);
+        } 
+
 
         _keyTimer -= Time.DeltaTime;
     }
@@ -245,14 +287,16 @@ public static class UISystem
     public static void Draw(SpriteBatch spriteBatch)
     {
         SpriteFontBase font = _fontSystem.GetFont(BaseFontSize * ScaleModifier);
+        int cursorSpeed = 50;
 
         for (int i = 0; i < Lines.Count; i++)
         {
-            spriteBatch.DrawString(font, Lines[i], new Vector2(100, 100 + (i * _lineSpacing)) * ScaleModifier, Color.White);
+            spriteBatch.DrawString(font, Lines[i], new Vector2(_codePosition.X, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White * _textOpacity);
         }
-        spriteBatch.DrawString(font, "|", new Vector2(100 + font.MeasureString(Lines[LineIndex].Substring(0, CharIndex)).X / ScaleModifier - (font.MeasureString("|") / 2).X, 100 + (LineIndex * _lineSpacing)) * ScaleModifier, Color.White);
+        _cursorPosition = new Vector2(MathHelper.Lerp(_cursorPosition.X, _codePosition.X + font.MeasureString(Lines[LineIndex].Substring(0, CharIndex)).X / ScaleModifier - (font.MeasureString("|") / 2).X, cursorSpeed * Time.DeltaTime), MathHelper.Lerp(_cursorPosition.Y, _codePosition.Y + (LineIndex * _lineSpacing), cursorSpeed * Time.DeltaTime));
+        spriteBatch.DrawString(font, "|", _cursorPosition * ScaleModifier, Color.White);
 
-        spriteBatch.DrawString(font, _fps.msg, new Vector2(20, 20) * ScaleModifier, Color.White);
+        spriteBatch.DrawString(font, _fps.msg, new Vector2(_gameWindow.ClientBounds.Width - font.MeasureString(_fps.msg).X, 20) * ScaleModifier, Color.White);
         _fps.frames++;
 
         //spriteBatch.DrawString(font, $"Lines: {Lines.Count}", new Vector2(150, 20) * ScaleModifier, Color.White);
@@ -300,6 +344,7 @@ public static class UISystem
                     {
                         while (deletionArea[i] == ' ' && i > 0)
                         {
+                            if (i + 1  == GetFirstNonSpaceCharacterIndex(LineIndex)) break;
                             i--;
                         }
 
@@ -481,6 +526,7 @@ public static class UISystem
             if (Lines[LineIndex][CharIndex] == '}' && Lines[LineIndex][CharIndex - 1] == '{')
             {
                 HandleBackspace();
+                if (LineLength > 0) HandleBackspace();
                 string indent = "";
                 int endIndex = GetFirstNonSpaceCharacterIndex(LineIndex);
                 if (endIndex == -1)
@@ -504,6 +550,11 @@ public static class UISystem
         }
 
         string insert = "";
+        if (Lines[LineIndex].Length > 0 && CharIndex != 0)
+        {
+            if (Lines[LineIndex][CharIndex - 1] == '{') HandleTab();
+        }
+        
         if (LineLength > CharIndex)
         {
             insert = Lines[LineIndex].Substring(CharIndex, LineLength - CharIndex);
@@ -511,14 +562,27 @@ public static class UISystem
         }
         Lines.Insert(LineIndex + 1, insert);
         LineIndex++;
-        CharIndex = 0;
+
+        int num = GetFirstNonSpaceCharacterIndex(LineIndex - 1);
+        if (num == -1)
+        {
+            num = Lines[LineIndex - 1].Length;
+        }
+
+        string lineIndent = "";
+        for (int i = 0; i < num; i++)
+        {
+            lineIndent += " ";
+        }
+        Lines[LineIndex] += lineIndent;
+        SetCharIndex(num);
     }
 
     private static void LoadFile(string filePath)
     {
         if (File.Exists(filePath))
         {
-            if (Path.GetExtension(filePath) == ".txt")
+            if (Path.GetExtension(filePath) == ".txt" || Path.GetExtension(filePath) == ".cs")
             {
                 Lines = File.ReadAllText(filePath).Split(["\r\n", "\n"], StringSplitOptions.None).ToList();
                 if (Lines.Count - 1 < LineIndex)
@@ -526,13 +590,19 @@ public static class UISystem
                     LineIndex = Lines.Count - 1;
                 }
 
-                SetCharIndex(CharIndex);
+                SetCharIndex(LineLength);
             }
         }
         else
         {
-            Console.WriteLine("the specified file doesn't exist");
+            throw new FileNotFoundException("File to read from not found");
         }
+    }
+
+    private static void SaveFile(string filePath)
+    {
+        if (!File.Exists(filePath)) File.Create(filePath);
+        File.WriteAllText(filePath, String.Join("\r\n", Lines));
     }
 
     private static void ResetKeyTimer()
@@ -543,7 +613,7 @@ public static class UISystem
         }
         else
         {
-            _keyTimer = 0.3f;
+            _keyTimer = 0.2f;
         }
     }
 
@@ -556,7 +626,7 @@ public static class UISystem
 
         CharIndex = charIndex;
     }
-    
+
     private static int GetFirstNonSpaceCharacterIndex(int lineIndex)
     {
         if (lineIndex < Lines.Count)
@@ -580,5 +650,21 @@ public static class UISystem
         }
 
         return -1;
+    }
+
+    private static bool IsLineEmpty(int lineIndex)
+    {
+        if (lineIndex > Lines.Count) throw new ArgumentOutOfRangeException("LineIndex was higher than amount of lines");
+        if (string.IsNullOrWhiteSpace(Lines[lineIndex]))
+        {
+            return true;
+        }
+
+        return false;
+    }
+    
+    private static void SelectFilePath()
+    {
+        _selectingFilePath = true;
     }
 }
