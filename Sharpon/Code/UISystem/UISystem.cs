@@ -204,6 +204,11 @@ public static class UISystem
                 _charQueue.Enqueue('}');
             }
 
+            if (pressedKeys[i] == '[')
+            {
+                _charQueue.Enqueue(']');
+            }
+
             if (pressedKeys[i] == '"' && !_blockQuotationMarks)
             {
                 _charQueue.Enqueue('"');
@@ -225,6 +230,11 @@ public static class UISystem
         }
 
         if (pressedKeys.Contains('}'))
+        {
+            CharIndex--;
+        }
+
+        if (pressedKeys.Contains(']'))
         {
             CharIndex--;
         }
@@ -368,6 +378,25 @@ public static class UISystem
                         }
                     }
                 }
+
+                //Handle the []
+                if (CharIndex != LineLength)
+                {
+                    if (Lines[LineIndex][CharIndex] == ']' && Lines[LineIndex][CharIndex - 1] == '[')
+                    {
+                        deletionArea += tempArea[0];
+                        deletionLength++;
+                        CharIndex++;
+                        if (tempArea.Length > 1)
+                        {
+                            tempArea = tempArea.Substring(1, tempArea.Length - 1);
+                        }
+                        else
+                        {
+                            tempArea = "";
+                        }
+                    }
+                }
             }
 
             deletionArea = deletionArea.Substring(0, deletionArea.Length - deletionLength);
@@ -453,7 +482,13 @@ public static class UISystem
             {
                 HandleBackspace();
                 string indent = "";
-                for (int i = 0; i < CharIndex; i++)
+                int endIndex = GetFirstNonSpaceCharacterIndex(LineIndex);
+                if (endIndex == -1)
+                {
+                    endIndex = LineLength;
+                }
+
+                for (int i = 0; i < endIndex; i++)
                 {
                     indent += " ";
                 }
@@ -511,7 +546,7 @@ public static class UISystem
             _keyTimer = 0.3f;
         }
     }
-    
+
     private static void SetCharIndex(int charIndex)
     {
         if (charIndex > LineLength)
@@ -520,5 +555,25 @@ public static class UISystem
         }
 
         CharIndex = charIndex;
+    }
+    
+    private static int GetFirstNonSpaceCharacterIndex(int lineIndex)
+    {
+        if (Lines[lineIndex].Length < 0)
+        {
+            return -1;
+        }
+
+        int index = 0;
+        while (Lines[lineIndex][index] == ' ')
+        {
+            index++;
+            if (index == Lines[lineIndex].Length - 1)
+            {
+                return -1;
+            }
+        }
+
+        return index;
     }
 }
