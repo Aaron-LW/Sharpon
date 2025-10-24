@@ -125,24 +125,24 @@ public static class UISystem
 
         if (Input.IsKeyDown(Keys.Down) && _keyTimer <= 0)
         {
-            if (LineIndex < Lines.Count - 1)
+            if (LineIndex + 1 < Lines.Count)
             {
                 LineIndex++;
-
-                SetCharIndex(CharIndex);
-                ResetKeyTimer();
-                _keyPressed = true;
             }
+
+            SetCharIndex(LineLength);
+            ResetKeyTimer();
+            _keyPressed = true;
         }
 
         if (Input.IsKeyDown(Keys.Up) && _keyTimer <= 0)
         {
-            if (LineIndex > 0)
+            if (LineIndex - 1 > -1)
             {
                 LineIndex--;
             }
 
-            SetCharIndex(CharIndex);
+            SetCharIndex(LineLength);
             ResetKeyTimer();
             _keyPressed = true;
         }
@@ -559,21 +559,26 @@ public static class UISystem
     
     private static int GetFirstNonSpaceCharacterIndex(int lineIndex)
     {
-        if (Lines[lineIndex].Length < 0)
+        if (lineIndex < Lines.Count)
         {
-            return -1;
-        }
-
-        int index = 0;
-        while (Lines[lineIndex][index] == ' ')
-        {
-            index++;
-            if (index == Lines[lineIndex].Length - 1)
+            if (Lines[lineIndex].Length <= 0)
             {
                 return -1;
             }
+
+            int index = 0;
+            while (Lines[lineIndex][index] == ' ')
+            {
+                index++;
+                if (index == Lines[lineIndex].Length)
+                {
+                    return -1;
+                }
+            }
+
+            return index;
         }
 
-        return index;
+        return -1;
     }
 }
