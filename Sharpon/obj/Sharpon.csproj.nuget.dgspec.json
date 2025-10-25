@@ -1,26 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "/media/MonoGame/Sharpon/Sharpon/Sharpon.csproj": {}
+    "/home/tatzi/MonoGame/Sharpon/Sharpon/Sharpon.csproj": {}
   },
   "projects": {
-    "/media/MonoGame/Sharpon/Sharpon/Sharpon.csproj": {
+    "/home/tatzi/MonoGame/Sharpon/Sharpon/Sharpon.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/media/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
+        "projectUniqueName": "/home/tatzi/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
         "projectName": "Sharpon",
-        "projectPath": "/media/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
-        "packagesPath": "/home/katzi/.nuget/packages/",
-        "outputPath": "/media/MonoGame/Sharpon/Sharpon/obj/",
+        "projectPath": "/home/tatzi/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
+        "packagesPath": "/home/tatzi/.nuget/packages/",
+        "outputPath": "/home/tatzi/MonoGame/Sharpon/Sharpon/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/katzi/.nuget/NuGet/NuGet.Config"
+          "/home/tatzi/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "/media/NuGetLocalFeed/": {},
+          "/home/tatzi/NuGetLocalFeed": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -80,10 +80,6 @@
             },
             {
               "name": "Microsoft.NETCore.App.Host.linux-x64",
-              "version": "[8.0.20, 8.0.20]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
               "version": "[8.0.20, 8.0.20]"
             }
           ],

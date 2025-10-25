@@ -30,6 +30,7 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
+        InputHandler.Start(Window);
         Updater.Start(Window);
 
         base.Initialize();
