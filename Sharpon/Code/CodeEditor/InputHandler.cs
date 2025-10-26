@@ -109,7 +109,6 @@ public static class InputHandler
         }
 
         EditorMain.SetSelectedLine(EditorMain.Line.Remove(EditorMain.CharIndex - 1, 1));
-        EditorMain.AddToCharIndex(-1);
     }
 
     private static void HandleTab()

@@ -82,6 +82,16 @@ public static class KeybindHandler
                 EditorMain.RemoveLine(EditorMain.LineIndex);
             }
 
+            if (Input.IsKeyPressed(Keys.S))
+            {
+                EditorMain.SaveFile("/home/tatzi/C#/test/Program.cs");
+            }
+
+            if (Input.IsKeyPressed(Keys.L))
+            {
+                EditorMain.LoadFile("/home/tatzi/C#/test/Program.cs");
+            }
+
             ResetKeyTimer();
             _keyPressed = true;
         }

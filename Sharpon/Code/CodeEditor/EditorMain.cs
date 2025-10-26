@@ -166,7 +166,7 @@ public static class EditorMain
         CharIndex = VerifyCharIndex(CharIndex);
     }
 
-    private static void LoadFile(string filePath)
+    public static void LoadFile(string filePath)
     {
         if (File.Exists(filePath))
         {
@@ -187,7 +187,7 @@ public static class EditorMain
         }
     }
 
-    private static void SaveFile(string filePath)
+    public static void SaveFile(string filePath)
     {
         if (!File.Exists(filePath)) File.Create(filePath);
         File.WriteAllText(filePath, String.Join("\r\n", Lines));
