@@ -125,9 +125,9 @@ public static class EditorMain
 
     public static int VerifyLineIndex(int lineIndex)
     {
-        if (lineIndex > Lines.Count)
+        if (lineIndex >= Lines.Count)
         {
-            lineIndex = Lines.Count;
+            lineIndex = Lines.Count - 1;
         }
 
         if (lineIndex < 0)
@@ -161,6 +161,9 @@ public static class EditorMain
         {
             Lines[0] = "";
         }
+
+        LineIndex = VerifyLineIndex(LineIndex);
+        CharIndex = VerifyCharIndex(CharIndex);
     }
 
     private static void LoadFile(string filePath)

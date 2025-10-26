@@ -14,77 +14,62 @@ public static class KeybindHandler
 
     public static void HandleKeybinds()
     {
-        int charIndex = EditorMain.CharIndex;
-        int lineIndex = EditorMain.LineIndex;
-        string line = EditorMain.Lines[lineIndex];
-        int lineLength = line.Length;
-
         if (Input.IsKeyDown(Keys.Right) && _keyTimer <= 0)
         {
-            if (charIndex != lineLength)
+            if (EditorMain.CharIndex != EditorMain.LineLength)
             {
                 if (Input.IsKeyDown(Keys.LeftControl))
                 {
-                    charIndex = NextControlRightArrowIndex(charIndex, line);
+                    EditorMain.SetCharIndex(NextControlRightArrowIndex(EditorMain.CharIndex, EditorMain.Line));
                 }
                 else
                 {
-                    charIndex++;
+                    EditorMain.AddToCharIndex(1);
                 }
             }
 
-            charIndex = EditorMain.VerifyCharIndex(charIndex);
             ResetKeyTimer();
             _keyPressed = true;
         }
 
         if (Input.IsKeyDown(Keys.Left) && _keyTimer <= 0)
         {
-            if (charIndex != 0)
+            if (EditorMain.CharIndex != 0)
             {
                 if (Input.IsKeyDown(Keys.LeftControl))
                 {
-                    charIndex = NextControlLeftArrowIndex(charIndex, line);
+                    EditorMain.SetCharIndex(NextControlLeftArrowIndex(EditorMain.CharIndex, EditorMain.Line));
                 }
                 else
                 {
-                    charIndex--;
+                    EditorMain.AddToCharIndex(-1);
                 }
             }
 
-            charIndex = EditorMain.VerifyCharIndex(charIndex);
             ResetKeyTimer();
             _keyPressed = true;
         }
 
         if (Input.IsKeyDown(Keys.Up) && _keyTimer <= 0)
         {
-            int lineIndexAdjust = 0;
-
-            if (lineIndex != 0)
+            if (EditorMain.LineIndex != 0)
             {
-                lineIndex--;
-                charIndex = EditorMain.Lines[lineIndex].Length;
-                lineIndexAdjust = 1;
+                EditorMain.AddToLineIndex(-1);
+                EditorMain.SetCharIndex(EditorMain.LineLength);
             }
 
-            charIndex = EditorMain.VerifyCharIndex(charIndex);
             ResetKeyTimer();
             _keyPressed = true;
         }
 
         if (Input.IsKeyDown(Keys.Down) && _keyTimer <= 0)
         {
-            int lineIndexAdjust = 0;
-
-            if (lineIndex != EditorMain.Lines.Count - 1)
+            if (EditorMain.LineIndex != EditorMain.Lines.Count - 1)
             {
-                lineIndex++;
-                charIndex = EditorMain.Lines[lineIndex].Length;
-                lineIndexAdjust = 1;
+                EditorMain.AddToLineIndex(1);
+                EditorMain.SetCharIndex(EditorMain.LineLength);
             }
 
-            charIndex = EditorMain.VerifyCharIndex(charIndex);
             ResetKeyTimer();
             _keyPressed = true;
         }
@@ -93,23 +78,7 @@ public static class KeybindHandler
         {
             if (Input.IsKeyDown(Keys.X))
             {
-                if (EditorMain.Lines.Count > 1)
-                {
-                    EditorMain.Lines.RemoveAt(lineIndex);
-                    if (EditorMain.Lines.Count == lineIndex)
-                    {
-                        lineIndex = EditorMain.Lines.Count - 1;
-                    }
-                }
-                else
-                {
-                    EditorMain.Lines[0] = "";
-
-                }
-
-                charIndex = EditorMain.VerifyCharIndex(charIndex);
-                EditorMain.SetCharIndex(charIndex);
-                EditorMain.SetLineIndex(lineIndex);
+                EditorMain.RemoveLine(EditorMain.LineIndex);
             }
 
             ResetKeyTimer();

@@ -81,7 +81,6 @@ public static class InputHandler
             {
                 string temp = EditorMain.Line;
                 EditorMain.RemoveLine(EditorMain.LineIndex);
-                EditorMain.AddToLineIndex(-1);
                 EditorMain.SetSelectedLine(EditorMain.Line + temp);
                 EditorMain.SetCharIndex(EditorMain.LineLength);
             }
@@ -121,7 +120,6 @@ public static class InputHandler
                     }
 
                     EditorMain.SetSelectedLine(EditorMain.Line.Substring(spaces, EditorMain.LineLength - spaces));
-                    EditorMain.AddToCharIndex(-spaces);
                 }
             }
             else
