@@ -33,7 +33,7 @@ public class SimpleFps
 
     public void DrawFps(SpriteBatch spriteBatch, SpriteFont font, Vector2 fpsDisplayPosition, Color fpsTextColor)
     {
-        spriteBatch.DrawString(font, msg, fpsDisplayPosition, fpsTextColor, 0f, new Vector2(), 10 * UISystem.ScaleModifier, SpriteEffects.None, 0f);
+        spriteBatch.DrawString(font, msg, fpsDisplayPosition, fpsTextColor, 0f, new Vector2(), 10 * EditorMain.ScaleModifier, SpriteEffects.None, 0f);
         frames++;
     }
 }

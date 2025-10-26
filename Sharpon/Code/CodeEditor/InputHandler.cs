@@ -1,13 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using MonoGame.Extended.Particles.Modifiers;
 
 public static class InputHandler
 {
@@ -22,11 +17,6 @@ public static class InputHandler
 
     public static void Update()
     {
-        int charIndex = UISystem.CharIndex;
-        List<string> lines = UISystem.Lines;
-        string line = lines[UISystem.LineIndex];
-        int lineIndex = UISystem.LineIndex;
-
         StringBuilder stringBuilder = new StringBuilder();
         foreach(char e in _charQueue)
         {
@@ -54,17 +44,16 @@ public static class InputHandler
             }
         }
 
-        line = line.Insert(charIndex, pressedKeys);
-        charIndex += pressedKeys.Length;
+        EditorMain.SetSelectedLine(EditorMain.Line.Insert(EditorMain.CharIndex, pressedKeys));
+        EditorMain.AddToCharIndex(pressedKeys.Length);
 
         if (pressedKeys.Contains(')') ||
             pressedKeys.Contains('}') ||
             pressedKeys.Contains(']'))
         {
-            charIndex--;
+            EditorMain.AddToCharIndex(-1);
         }
 
-        WriteToUISystem(line, lineIndex, lineIndex, charIndex);
         KeybindHandler.HandleKeybinds();
     }
 
@@ -86,60 +75,42 @@ public static class InputHandler
 
     private static void HandleBackspace()
     {
-        string line = UISystem.Lines[UISystem.LineIndex];
-        int charIndex = UISystem.CharIndex;
-        int lineIndex = UISystem.LineIndex;
-
-        if (charIndex == 0)
+        if (EditorMain.CharIndex == 0)
         {
-            if (lineIndex != 0)
+            if (EditorMain.LineIndex != 0)
             {
-                string temp = line;
-                UISystem.Lines.RemoveAt(lineIndex);
-                lineIndex--;
-                charIndex = UISystem.Lines[lineIndex].Length;
-                UISystem.Lines[lineIndex] += temp;
-
-                WriteToUISystem(UISystem.Lines[lineIndex], lineIndex, lineIndex, charIndex);
+                string temp = EditorMain.Line;
+                EditorMain.RemoveLine(EditorMain.LineIndex);
+                EditorMain.AddToLineIndex(-1);
+                EditorMain.SetSelectedLine(EditorMain.Line + temp);
+                EditorMain.SetCharIndex(EditorMain.LineLength);
             }
 
-            charIndex = VerifyCharIndex(charIndex, UISystem.Lines[lineIndex]);
             return;
         }
         
         if (Input.IsKeyDown(Keys.LeftControl))
         {
-            int nextIndex = KeybindHandler.NextControlLeftArrowIndex(charIndex, line);
-            line = UISystem.Lines[lineIndex].Remove(nextIndex, charIndex - nextIndex);
-            charIndex = VerifyCharIndex(nextIndex, line);
-
-            WriteToUISystem(line, lineIndex, lineIndex, charIndex);
+            int nextIndex = KeybindHandler.NextControlLeftArrowIndex(EditorMain.CharIndex, EditorMain.Line);
+            EditorMain.SetSelectedLine(EditorMain.Line.Remove(nextIndex, EditorMain.CharIndex - nextIndex));
             return;
         }
 
-        line = line.Remove(charIndex - 1, 1);
-        charIndex--;
-
-        WriteToUISystem(line, lineIndex, lineIndex, charIndex);
+        EditorMain.SetSelectedLine(EditorMain.Line.Remove(EditorMain.CharIndex - 1, 1));
     }
 
     private static void HandleTab()
     {
-        string line = UISystem.Lines[UISystem.LineIndex];
-        int charIndex = UISystem.CharIndex;
-        int lineIndex = UISystem.LineIndex;
-        int lineLength = line.Length;
-
         if (Input.IsKeyDown(Keys.LeftShift))
         {
-            if (charIndex != 0)
+            if (EditorMain.CharIndex != 0)
             {
-                if (lineLength > 0)
+                if (EditorMain.LineLength > 0)
                 {
                     int spaces = 0;
                     for (int i = 0; i < 4; i++)
                     {
-                        if (UISystem.Lines[lineIndex][i] == ' ')
+                        if (EditorMain.Line[i] == ' ')
                         {
                             spaces++;
                         }
@@ -149,20 +120,18 @@ public static class InputHandler
                         }
                     }
 
-                    UISystem.Lines[lineIndex] = UISystem.Lines[lineIndex].Substring(spaces, lineLength - spaces);
-                    charIndex -= spaces;
+                    EditorMain.SetSelectedLine(EditorMain.Line.Substring(spaces, EditorMain.LineLength - spaces));
+                    EditorMain.AddToCharIndex(-spaces);
                 }
-
-                UISystem.CharIndex = charIndex;
             }
             else
             {
-                if (lineLength > 0)
+                if (EditorMain.LineLength > 0)
                 {
                     int spaces = 0;
                     for (int i = 0; i < 4; i++)
                     {
-                        if (UISystem.Lines[lineIndex][i] == ' ')
+                        if (EditorMain.Line[i] == ' ')
                         {
                             spaces++;
                         }
@@ -172,7 +141,7 @@ public static class InputHandler
                         }
                     }
 
-                    UISystem.Lines[lineIndex] = UISystem.Lines[lineIndex].Substring(spaces, lineLength - spaces);
+                    EditorMain.SetSelectedLine(EditorMain.Line.Substring(spaces, EditorMain.LineLength - spaces));
                 }
             }
 
@@ -189,38 +158,10 @@ public static class InputHandler
 
     private static void HandleEnter()
     {
-        int lineIndex = UISystem.LineIndex;
-        string line = UISystem.Lines[lineIndex];
-        int charIndex = UISystem.CharIndex;
-
-        string insert = line.Substring(charIndex, line.Length - charIndex);
-        line = line.Substring(0, charIndex);
-        UISystem.Lines.Insert(lineIndex + 1, insert);
-        lineIndex++;
-
-        charIndex = 0;
-        WriteToUISystem(line, lineIndex - 1, lineIndex, charIndex);
-    }
-
-    public static void WriteToUISystem(string line, int lineIndex, int newLineIndex, int charIndex)
-    {
-        UISystem.Lines[lineIndex] = line;
-        UISystem.LineIndex = newLineIndex;
-        UISystem.CharIndex = charIndex;
-    }
-
-    public static int VerifyCharIndex(int charIndex, string line)
-    {
-        if (charIndex > line.Length)
-        {
-            charIndex = line.Length;
-        }
-
-        if (charIndex < 0)
-        {
-            charIndex = 0;
-        }
-
-        return charIndex;
+        string insert = EditorMain.Line.Substring(EditorMain.CharIndex, EditorMain.LineLength - EditorMain.CharIndex);
+        EditorMain.SetSelectedLine(EditorMain.Line.Substring(0, EditorMain.CharIndex));
+        EditorMain.Lines.Insert(EditorMain.LineIndex + 1, insert);
+        EditorMain.AddToLineIndex(1);
+        EditorMain.SetCharIndex(0);
     }
 }

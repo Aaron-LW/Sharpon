@@ -14,9 +14,9 @@ public static class KeybindHandler
 
     public static void HandleKeybinds()
     {
-        int charIndex = UISystem.CharIndex;
-        int lineIndex = UISystem.LineIndex;
-        string line = UISystem.Lines[lineIndex];
+        int charIndex = EditorMain.CharIndex;
+        int lineIndex = EditorMain.LineIndex;
+        string line = EditorMain.Lines[lineIndex];
         int lineLength = line.Length;
 
         if (Input.IsKeyDown(Keys.Right) && _keyTimer <= 0)
@@ -33,10 +33,9 @@ public static class KeybindHandler
                 }
             }
 
-            charIndex = InputHandler.VerifyCharIndex(charIndex, line);
+            charIndex = EditorMain.VerifyCharIndex(charIndex);
             ResetKeyTimer();
             _keyPressed = true;
-            InputHandler.WriteToUISystem(line, lineIndex, lineIndex, charIndex);
         }
 
         if (Input.IsKeyDown(Keys.Left) && _keyTimer <= 0)
@@ -53,10 +52,9 @@ public static class KeybindHandler
                 }
             }
 
-            charIndex = InputHandler.VerifyCharIndex(charIndex, line);
+            charIndex = EditorMain.VerifyCharIndex(charIndex);
             ResetKeyTimer();
             _keyPressed = true;
-            InputHandler.WriteToUISystem(line, lineIndex, lineIndex, charIndex);
         }
 
         if (Input.IsKeyDown(Keys.Up) && _keyTimer <= 0)
@@ -66,54 +64,52 @@ public static class KeybindHandler
             if (lineIndex != 0)
             {
                 lineIndex--;
-                charIndex = UISystem.Lines[lineIndex].Length;
+                charIndex = EditorMain.Lines[lineIndex].Length;
                 lineIndexAdjust = 1;
             }
 
-            charIndex = InputHandler.VerifyCharIndex(charIndex, UISystem.Lines[lineIndex]);
+            charIndex = EditorMain.VerifyCharIndex(charIndex);
             ResetKeyTimer();
             _keyPressed = true;
-            InputHandler.WriteToUISystem(line, lineIndex + lineIndexAdjust, lineIndex, charIndex);
         }
 
         if (Input.IsKeyDown(Keys.Down) && _keyTimer <= 0)
         {
             int lineIndexAdjust = 0;
 
-            if (lineIndex != UISystem.Lines.Count - 1)
+            if (lineIndex != EditorMain.Lines.Count - 1)
             {
                 lineIndex++;
-                charIndex = UISystem.Lines[lineIndex].Length;
+                charIndex = EditorMain.Lines[lineIndex].Length;
                 lineIndexAdjust = 1;
             }
 
-            charIndex = InputHandler.VerifyCharIndex(charIndex, UISystem.Lines[lineIndex]);
+            charIndex = EditorMain.VerifyCharIndex(charIndex);
             ResetKeyTimer();
             _keyPressed = true;
-            InputHandler.WriteToUISystem(line, lineIndex - lineIndexAdjust, lineIndex, charIndex);
         }
         
         if (Input.IsKeyDown(Keys.LeftControl) && _keyTimer <= 0)
         {
             if (Input.IsKeyDown(Keys.X))
             {
-                if (UISystem.Lines.Count > 1)
+                if (EditorMain.Lines.Count > 1)
                 {
-                    UISystem.Lines.RemoveAt(lineIndex);
-                    if (UISystem.Lines.Count == lineIndex)
+                    EditorMain.Lines.RemoveAt(lineIndex);
+                    if (EditorMain.Lines.Count == lineIndex)
                     {
-                        lineIndex = UISystem.Lines.Count - 1;
+                        lineIndex = EditorMain.Lines.Count - 1;
                     }
                 }
                 else
                 {
-                    UISystem.Lines[0] = "";
+                    EditorMain.Lines[0] = "";
 
                 }
 
-                charIndex = InputHandler.VerifyCharIndex(charIndex, UISystem.Lines[lineIndex]);
-                UISystem.CharIndex = charIndex;
-                UISystem.LineIndex = lineIndex;
+                charIndex = EditorMain.VerifyCharIndex(charIndex);
+                EditorMain.SetCharIndex(charIndex);
+                EditorMain.SetLineIndex(lineIndex);
             }
 
             ResetKeyTimer();

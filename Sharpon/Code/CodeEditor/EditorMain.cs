@@ -1,16 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.IO;
+using System.Linq;
+using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using FontStashSharp;
-using System.IO;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection.Metadata;
 
-public static class UISystem
+public static class EditorMain
 {
     public static float BaseFontSize = 20;
     public static float ScaleModifier => MathF.Round((float)_gameWindow.ClientBounds.Width / 1920, 2);
@@ -27,9 +25,14 @@ public static class UISystem
     private static float _textOpacity = 1;
 
     public static List<string> Lines = new List<string>() { "" };
-    public static int LineIndex = 0;
-    public static int CharIndex = 0;
+    public static int LineIndex { get; private set; }
+    public static int CharIndex { get; private set; }
     public static int LineLength => Lines[LineIndex].Length;
+    public static string Line
+    {
+        get { return Lines[LineIndex]; }
+        private set { Lines[LineIndex] = value; }    
+    }
         
     public static void Start(GameWindow gameWindow)
     {
@@ -81,61 +84,83 @@ public static class UISystem
         //spriteBatch.DrawString(font, $"Current Line: {LineIndex}", new Vector2(250, 20) * ScaleModifier, Color.White);
     }
 
-    private static void HandleTab()
+    public static void SetCharIndex(int charIndex)
     {
-        if (Input.IsKeyDown(Keys.LeftShift))
+        charIndex = VerifyCharIndex(charIndex);
+        CharIndex = charIndex;
+    }
+
+    public static void AddToCharIndex(int number)
+    {
+        CharIndex += number;
+        CharIndex = VerifyCharIndex(CharIndex);
+    }
+
+    public static int VerifyCharIndex(int charIndex)
+    {
+        if (charIndex > LineLength)
         {
-            if (CharIndex != 0)
-            {
-                if (LineLength > 0)
-                {
-                    int spaces = 0;
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (Lines[LineIndex][i] == ' ')
-                        {
-                            spaces++;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
+            charIndex = LineLength;
+        }
 
-                    Lines[LineIndex] = Lines[LineIndex].Substring(spaces, LineLength - spaces);
-                    CharIndex -= spaces;
-                }
-            }
-            else
-            {
-                if (LineLength > 0)
-                {
-                    int spaces = 0;
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (Lines[LineIndex][i] == ' ')
-                        {
-                            spaces++;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
+        if (charIndex < 0)
+        {
+            charIndex = 0;
+        }
 
-                    Lines[LineIndex] = Lines[LineIndex].Substring(spaces, LineLength - spaces);
-                }
-            }
+        return charIndex;
+    }
 
+    public static void SetLineIndex(int lineIndex)
+    {
+        lineIndex = VerifyLineIndex(lineIndex);
+        LineIndex = lineIndex;
+    }
+
+    public static void AddToLineIndex(int number)
+    {
+        LineIndex += number;
+        LineIndex = VerifyLineIndex(LineIndex);
+    }
+
+    public static int VerifyLineIndex(int lineIndex)
+    {
+        if (lineIndex > Lines.Count)
+        {
+            lineIndex = Lines.Count;
+        }
+
+        if (lineIndex < 0)
+        {
+            lineIndex = 0;
+        }
+
+        return lineIndex;
+    }
+
+    public static void SetSelectedLine(string line)
+    {
+        Line = line;
+        CharIndex = VerifyCharIndex(CharIndex);
+    }
+
+    public static void SetLine(string line, int lineIndex)
+    {
+        if (lineIndex > Lines.Count || lineIndex < 0) return;
+        Lines[lineIndex] = line;
+    }
+
+    public static void RemoveLine(int lineIndex)
+    {
+        if (lineIndex > Lines.Count || lineIndex < 0) return;
+        if (Lines.Count > 1)
+        {
+            Lines.RemoveAt(lineIndex);
         }
         else
         {
-            _charQueue.Enqueue(' ');
-            _charQueue.Enqueue(' ');
-            _charQueue.Enqueue(' ');
-            _charQueue.Enqueue(' ');
+            Lines[0] = "";
         }
-
     }
 
     private static void LoadFile(string filePath)
@@ -163,16 +188,6 @@ public static class UISystem
     {
         if (!File.Exists(filePath)) File.Create(filePath);
         File.WriteAllText(filePath, String.Join("\r\n", Lines));
-    }
-
-    private static void SetCharIndex(int charIndex)
-    {
-        if (charIndex > LineLength)
-        {
-            charIndex = LineLength;
-        }
-
-        CharIndex = charIndex;
     }
 
     private static int GetFirstNonSpaceCharacterIndex(int lineIndex)
