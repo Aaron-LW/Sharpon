@@ -81,21 +81,35 @@ public static class InputHandler
             {
                 string temp = EditorMain.Line;
                 EditorMain.RemoveLine(EditorMain.LineIndex);
-                EditorMain.SetSelectedLine(EditorMain.Line + temp);
+                EditorMain.AddToLineIndex(-1);
                 EditorMain.SetCharIndex(EditorMain.LineLength);
+                EditorMain.SetSelectedLine(EditorMain.Line + temp);
             }
 
             return;
         }
-        
+
         if (Input.IsKeyDown(Keys.LeftControl))
         {
             int nextIndex = KeybindHandler.NextControlLeftArrowIndex(EditorMain.CharIndex, EditorMain.Line);
             EditorMain.SetSelectedLine(EditorMain.Line.Remove(nextIndex, EditorMain.CharIndex - nextIndex));
+            EditorMain.SetCharIndex(nextIndex);
             return;
         }
 
+        if (EditorMain.CharIndex != EditorMain.LineLength)
+        {
+            if (EditorMain.Line[EditorMain.CharIndex] == '}' ||
+                EditorMain.Line[EditorMain.CharIndex] == ')' ||
+                EditorMain.Line[EditorMain.CharIndex] == ']' ||
+                EditorMain.Line[EditorMain.CharIndex] == '"')
+            {
+                EditorMain.SetSelectedLine(EditorMain.Line.Remove(EditorMain.CharIndex, 1));
+            }
+        }
+
         EditorMain.SetSelectedLine(EditorMain.Line.Remove(EditorMain.CharIndex - 1, 1));
+        EditorMain.AddToCharIndex(-1);
     }
 
     private static void HandleTab()
@@ -157,9 +171,22 @@ public static class InputHandler
     private static void HandleEnter()
     {
         string insert = EditorMain.Line.Substring(EditorMain.CharIndex, EditorMain.LineLength - EditorMain.CharIndex);
+        
+        int spaces = 0;
+        for (int i = 0; i < EditorMain.LineLength; i++)
+        {
+            if (EditorMain.Line[i] != ' ') break;
+            spaces++;
+        }
+
+        for (int i = 0; i < spaces; i++)
+        {
+            insert += ' ';
+        }
+
         EditorMain.SetSelectedLine(EditorMain.Line.Substring(0, EditorMain.CharIndex));
         EditorMain.Lines.Insert(EditorMain.LineIndex + 1, insert);
         EditorMain.AddToLineIndex(1);
-        EditorMain.SetCharIndex(0);
+        EditorMain.SetCharIndex(EditorMain.CharIndex);
     }
 }

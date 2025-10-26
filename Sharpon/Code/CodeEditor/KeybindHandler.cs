@@ -3,6 +3,7 @@ using System.Data;
 using System.Reflection.Metadata;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Particles.Modifiers;
+using MonoGame.Extended.Particles.Primitives;
 
 public static class KeybindHandler
 {
@@ -121,9 +122,9 @@ public static class KeybindHandler
         }
         else
         {
-            for (int i = startIndex; i < line.Length; i++)
+            for (int i = startIndex + 1; i < line.Length; i++)
             {
-                if (line[i] == ' ') return i;
+                if (line[i] == ' ' || line[i] == '.' || line[i] == ',') return i;
             }
         }
 
@@ -132,23 +133,24 @@ public static class KeybindHandler
 
     public static int NextControlLeftArrowIndex(int startIndex, string line)
     {
-        if (startIndex == line.Length && line.Length > 1)
-        {
-            startIndex--;
-        }
+        startIndex--;
 
-        if (line[startIndex - 1] == ' ')
+        if (line[startIndex] == ' ')
         {
+            //Search for letters
             for (int i = startIndex - 1; i > 0; i--)
             {
                 if (line[i] != ' ') return i + 1;
+                if (line[i] == '.' || line[i] == ',') return i + 1;
             }
         }
-        else
+        else if (line[startIndex] != ' ')
         {
+            //Search for spaces
             for (int i = startIndex - 1; i > 0; i--)
             {
                 if (line[i] == ' ') return i + 1;
+                if (line[i] == '.' || line[i] == ',') return i + 1;
             }
         }
 

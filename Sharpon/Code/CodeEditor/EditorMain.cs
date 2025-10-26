@@ -45,7 +45,6 @@ public static class EditorMain
     public static void Update(GameTime gameTime)
     {
         _fps.Update(gameTime);
-        InputHandler.Update();
 
         if (Input.IsKeyPressed(Keys.LeftAlt))
         {
@@ -63,6 +62,7 @@ public static class EditorMain
             _codePosition.Y = _codeMaxY;
         }
 
+        InputHandler.Update();
     }
 
     public static void Draw(SpriteBatch spriteBatch)
