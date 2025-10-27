@@ -79,6 +79,7 @@ public static class KeybindHandler
         {
             if (Input.IsKeyDown(Keys.X))
             {
+                
                 EditorMain.RemoveLine(EditorMain.LineIndex);
             }
 

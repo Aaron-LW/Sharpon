@@ -8,6 +8,8 @@ public static class InputHandler
 {
     private static GameWindow _gameWindow;
     private static List<char> _charQueue = new List<char>();
+
+    private static bool _suppressQoutationMark = false;
         
     public static void Start(GameWindow gameWindow)
     {
@@ -41,6 +43,12 @@ public static class InputHandler
                 case '[':
                     _charQueue.Add(']');
                     break;
+
+                case '"':
+                    if (_suppressQoutationMark) { _suppressQoutationMark = false; break; }
+                    else _suppressQoutationMark = true;
+                    _charQueue.Add('"');
+                    break;
             }
         }
 
@@ -49,7 +57,8 @@ public static class InputHandler
 
         if (pressedKeys.Contains(')') ||
             pressedKeys.Contains('}') ||
-            pressedKeys.Contains(']'))
+            pressedKeys.Contains(']') ||
+            pressedKeys.Contains('"') && !_suppressQoutationMark)
         {
             EditorMain.AddToCharIndex(-1);
         }
@@ -104,7 +113,9 @@ public static class InputHandler
                 EditorMain.Line[EditorMain.CharIndex] == ']' ||
                 EditorMain.Line[EditorMain.CharIndex] == '"')
             {
-                EditorMain.SetSelectedLine(EditorMain.Line.Remove(EditorMain.CharIndex, 1));
+                EditorMain.SetSelectedLine(EditorMain.Line.Remove(EditorMain.CharIndex - 1, 2));
+                if (EditorMain.Line[EditorMain.CharIndex - 1] != ' ') EditorMain.AddToCharIndex(-1);
+                return;
             }
         }
 
@@ -169,8 +180,16 @@ public static class InputHandler
 
     private static void HandleEnter()
     {
+        bool tab = false;
         string insert = EditorMain.Line.Substring(EditorMain.CharIndex, EditorMain.LineLength - EditorMain.CharIndex);
-        
+        if (EditorMain.CharIndex != 0)
+        {
+            if (EditorMain.Line[EditorMain.CharIndex - 1] == '{')
+            {
+                tab = true;
+            }
+        }
+
         int spaces = 0;
         for (int i = 0; i < EditorMain.LineLength; i++)
         {
@@ -178,14 +197,34 @@ public static class InputHandler
             spaces++;
         }
 
+        string spacesString = "";
         for (int i = 0; i < spaces; i++)
         {
-            insert += ' ';
+            spacesString += " ";
         }
 
+        if (insert != String.Empty)
+        {
+            if (insert[0] == '}')
+            {
+                HandleBackspace();
+                if (EditorMain.Line.Length > 0) EditorMain.SetSelectedLine(EditorMain.Line.Remove(EditorMain.Line.Length - insert.Length));
+                EditorMain.Lines.Insert(EditorMain.LineIndex + 1, spacesString + '{');
+                EditorMain.Lines.Insert(EditorMain.LineIndex + 2, spacesString);
+                EditorMain.Lines.Insert(EditorMain.LineIndex + 3, spacesString + insert);
+                EditorMain.AddToLineIndex(2);
+                HandleTab();
+
+                EditorMain.SetCharIndex(EditorMain.CharIndex);
+                return;
+            }
+
+        }
+        
         EditorMain.SetSelectedLine(EditorMain.Line.Substring(0, EditorMain.CharIndex));
-        EditorMain.Lines.Insert(EditorMain.LineIndex + 1, insert);
+        EditorMain.Lines.Insert(EditorMain.LineIndex + 1, spacesString + insert);
         EditorMain.AddToLineIndex(1);
-        EditorMain.SetCharIndex(EditorMain.CharIndex);
+        EditorMain.SetCharIndex(spaces);
+        if (tab) HandleTab();
     }
 }
