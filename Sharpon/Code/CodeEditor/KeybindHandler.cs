@@ -85,12 +85,12 @@ public static class KeybindHandler
 
             if (Input.IsKeyPressed(Keys.S))
             {
-                EditorMain.SaveFile("/home/tatzi/C#/test/Program.cs");
+                EditorMain.SaveFile("/media/C#/test/Program.cs");
             }
 
             if (Input.IsKeyPressed(Keys.L))
             {
-                EditorMain.LoadFile("/home/tatzi/C#/test/Program.cs");
+                EditorMain.LoadFile("/media/C#/test/Program.cs");
             }
 
             ResetKeyTimer();

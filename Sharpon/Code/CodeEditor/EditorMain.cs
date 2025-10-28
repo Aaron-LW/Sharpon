@@ -18,7 +18,7 @@ public static class EditorMain
     private static SimpleFps _fps = new SimpleFps();
     private static float _lineSpacing => (float)(1 * BaseFontSize);
     private static Queue<char> _charQueue = new Queue<char>();
-    private static string _filePath = "/home/tatzi/C#/test/Program.cs";
+    private static string _filePath = "/media/C#/test/Program.cs";
     private static float _codeMaxY = 60;
     private static Vector2 _codePosition = new Vector2(50, _codeMaxY);
     private static Vector2 _cursorPosition;

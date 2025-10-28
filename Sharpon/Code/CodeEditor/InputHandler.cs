@@ -203,6 +203,14 @@ public static class InputHandler
             spacesString += " ";
         }
 
+        if (Input.IsKeyDown(Keys.LeftShift))
+        {
+            EditorMain.Lines.Insert(EditorMain.LineIndex + 1, spacesString);
+            EditorMain.AddToLineIndex(1);
+            EditorMain.SetCharIndex(EditorMain.CharIndex);
+            return;
+        }
+
         if (insert != String.Empty)
         {
             if (insert[0] == '}')
