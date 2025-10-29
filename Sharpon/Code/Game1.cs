@@ -9,6 +9,7 @@ namespace Sharpon;
 
 public class Game1 : Game
 {
+    private SimpleFps _fps = new SimpleFps();
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Color _backgroundColor = new Color(50, 48, 57);
@@ -21,7 +22,7 @@ public class Game1 : Game
 
         TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 180.0);
         _graphics.SynchronizeWithVerticalRetrace = false;
-        IsFixedTimeStep = false;
+        IsFixedTimeStep = true;
 
         _graphics.ApplyChanges();
 
@@ -43,6 +44,7 @@ public class Game1 : Game
 
     protected override void Update(GameTime gameTime)
     {
+        _fps.Update(gameTime);
         Updater.Update(gameTime);
 
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -57,7 +59,12 @@ public class Game1 : Game
         GraphicsDevice.Clear(_backgroundColor);
         _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
 
+        SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize);
+
+        _spriteBatch.DrawString(font, _fps.msg, new Vector2((Window.ClientBounds.Width - font.MeasureString(_fps.msg).X - 20) * EditorMain.ScaleModifier, 20), Color.White);
         Updater.Draw(_spriteBatch);
+
+        _fps.frames++;
 
         _spriteBatch.End();
         base.Draw(gameTime);
