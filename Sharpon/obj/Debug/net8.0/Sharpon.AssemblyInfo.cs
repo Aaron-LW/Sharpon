@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sharpon")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+483dc6468d47f1b441dede2303b32c1787e259bc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0218a70c4c4a565229614f85e8255d68cf4c802a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sharpon")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sharpon")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

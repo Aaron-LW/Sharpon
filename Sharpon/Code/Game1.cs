@@ -59,7 +59,7 @@ public class Game1 : Game
         GraphicsDevice.Clear(_backgroundColor);
         _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
 
-        SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize);
+        SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize * EditorMain.ScaleModifier);
 
         _spriteBatch.DrawString(font, EditorMain.FilePath, new Vector2((Window.ClientBounds.Width - font.MeasureString(EditorMain.FilePath).X - 200) * EditorMain.ScaleModifier, 20), Color.White);
         _spriteBatch.DrawString(font, _fps.msg, new Vector2((Window.ClientBounds.Width - font.MeasureString(_fps.msg).X - 20) * EditorMain.ScaleModifier, 20), Color.White);
