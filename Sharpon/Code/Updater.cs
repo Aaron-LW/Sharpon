@@ -15,6 +15,7 @@ public static class Updater
         Time.Update(gameTime);
         InputHandler.Update();
         InputDistributor.HandleKeybinds();
+        FileDialog.Update();
         Input.SwitchStates();
     }
 

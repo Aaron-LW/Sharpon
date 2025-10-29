@@ -178,6 +178,7 @@ public static class InputDistributor
                 return;
 
             case InputReceiver.FileDialog:
+                FileDialog.HandleTab();
                 return;
         }
 

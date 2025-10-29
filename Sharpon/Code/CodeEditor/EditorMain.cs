@@ -13,11 +13,11 @@ public static class EditorMain
 {
     public static float BaseFontSize = 20;
     public static float ScaleModifier => MathF.Round((float)_gameWindow.ClientBounds.Width / 1920, 2);
+    public static string FilePath { get; private set; } = "/media/C#/test/Program.cs";
 
     private static GameWindow _gameWindow;
     private static float _lineSpacing => (float)(1 * BaseFontSize);
     private static Queue<char> _charQueue = new Queue<char>();
-    private static string _filePath = "/media/C#/test/Program.cs";
     private static float _codeMaxY = 60;
     private static Vector2 _codePosition = new Vector2(50, _codeMaxY);
     private static Vector2 _cursorPosition;
@@ -44,7 +44,7 @@ public static class EditorMain
         string fontPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts", "JetBrainsMonoNLNerdFont-Bold.ttf"));
         FontSystem.AddFont(File.ReadAllBytes(fontPath));
         _gameWindow = gameWindow;
-        LoadFile(_filePath);
+        LoadFile(FilePath);
     }
     
     public static void Draw(SpriteBatch spriteBatch)
@@ -157,7 +157,7 @@ public static class EditorMain
             }
 
             SetCharIndex(LineLength);
-            _filePath = filePath;
+            FilePath = filePath;
         }
         else
         {
@@ -396,12 +396,12 @@ public static class EditorMain
 
             if (Input.IsKeyPressed(Keys.S))
             {
-                SaveFile(_filePath);
+                SaveFile(FilePath);
             }
 
             if (Input.IsKeyPressed(Keys.R))
             {
-                LoadFile(_filePath);
+                LoadFile(FilePath);
             }
 
             if (Input.IsKeyDown(Keys.LeftShift))
