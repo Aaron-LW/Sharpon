@@ -12,7 +12,7 @@ public class Game1 : Game
     private SimpleFps _fps = new SimpleFps();
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
-    private Color _backgroundColor = new Color(50, 48, 57);
+    private Color _backgroundColor = new Color(30, 28, 37);
 
     public Game1()
     {

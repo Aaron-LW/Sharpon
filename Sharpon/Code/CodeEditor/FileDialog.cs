@@ -28,6 +28,8 @@ public static class FileDialog
     private static int _spacing = 20;
     private static bool _updatedText = true;
     private static int _maxListedDirectoryEntries = 100;
+    private static Color _fileDialogColor = new Color(40, 38, 47);
+    private static Color _fileDialogTextBoxColor = new Color(50, 48, 57);
 
     private static float _keyTimer = 0;
     private static bool _keyPressed = false;
@@ -83,8 +85,16 @@ public static class FileDialog
     {
         if (!IsOpened) return;
         SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize * EditorMain.ScaleModifier);
-        Vector2 position = new Vector2(_gameWindow.ClientBounds.Width / 3,
-                                       _gameWindow.ClientBounds.Height / 2 - (font.MeasureString("|").Y * EditorMain.ScaleModifier / 2));
+        Vector2 position = new Vector2(_gameWindow.ClientBounds.Width / 2.6f,
+                                       100 * EditorMain.ScaleModifier);
+
+        spriteBatch.FillRectangle(new RectangleF(position - new Vector2(5, 0) * EditorMain.ScaleModifier,
+                                                 new SizeF(font.MeasureString(_filePaths.Take(40).Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur)).X + 10 * EditorMain.ScaleModifier, 20 * EditorMain.ScaleModifier)),
+                                                 _fileDialogTextBoxColor);
+
+        spriteBatch.FillRectangle(new RectangleF(position + new Vector2(0, _spacing * EditorMain.ScaleModifier) - new Vector2(5, 0) * EditorMain.ScaleModifier,
+                                                 new SizeF(font.MeasureString(_filePaths.Take(40).Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur)).X + 10 * EditorMain.ScaleModifier, _fileAmount * _spacing * EditorMain.ScaleModifier + 10 * EditorMain.ScaleModifier)),
+                                                 _fileDialogColor);
 
         if (!_canAccess && _existsFile) spriteBatch.DrawString(font, "Can't access file (No permission)", position - new Vector2(0, _spacing) * EditorMain.ScaleModifier, Color.Red);
         else if (!_existsFile) spriteBatch.DrawString(font, "File doesn't exist", position - new Vector2(0, _spacing) * EditorMain.ScaleModifier, Color.Red);
@@ -97,12 +107,19 @@ public static class FileDialog
             {
                 if (LineIndex == i)
                 {
-                    spriteBatch.FillRectangle(new RectangleF(position + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier,
+                    spriteBatch.FillRectangle(new RectangleF(position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier,
                                               new SizeF(font.MeasureString(_filePaths[i]).X, font.MeasureString(_filePaths[i]).Y)),
                                                 Color.LightBlue * 0.5f);
                 }
 
-                spriteBatch.DrawString(font, _filePaths[i], position + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier, Color.White);
+                if (File.Exists(_filePaths[i]))
+                {
+                    spriteBatch.DrawString(font, _filePaths[i], position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier, Color.White);
+                }
+                else
+                {
+                    spriteBatch.DrawString(font, _filePaths[i], position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier, Color.RoyalBlue);
+                }
             }
         }
 
