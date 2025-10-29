@@ -396,19 +396,23 @@ public static class EditorMain
 
             if (Input.IsKeyPressed(Keys.S))
             {
-                SaveFile("/media/C#/test/Program.cs");
+                SaveFile(_filePath);
             }
 
-            if (Input.IsKeyPressed(Keys.L))
+            if (Input.IsKeyPressed(Keys.R))
             {
-                LoadFile("/media/C#/test/Program.cs");
+                LoadFile(_filePath);
             }
 
-            if (Input.IsKeyPressed(Keys.I))
+            if (Input.IsKeyDown(Keys.LeftShift))
             {
-                FileDialog.IsOpened = true;
-                InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
+                if (Input.IsKeyPressed(Keys.P))
+                {
+                    FileDialog.Open();
+                    InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
+                }
             }
+
 
             ResetKeyTimer();
             _keyPressed = true;

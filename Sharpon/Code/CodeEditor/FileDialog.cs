@@ -73,7 +73,6 @@ public static class FileDialog
         IsOpened = false;
         CharIndex = 0;
         EditorMain.LoadFile(Text);
-        Text = "";
     }
 
     public static void HandleKeybinds()
@@ -105,9 +104,15 @@ public static class FileDialog
         _keyTimer -= Time.DeltaTime;
     }
 
-    public static void Toggle()
+    public static void Open()
     {
-        IsOpened = !IsOpened;
+        IsOpened = true;
+        CharIndex = Text.Length;
+    }
+
+    public static void Close()
+    {
+        IsOpened = false;
     }
 
     private static void ResetKeyTimer()
