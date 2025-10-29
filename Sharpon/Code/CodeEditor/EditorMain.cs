@@ -157,6 +157,7 @@ public static class EditorMain
             }
 
             SetCharIndex(LineLength);
+            _filePath = filePath;
         }
         else
         {
