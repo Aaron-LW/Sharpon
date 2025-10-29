@@ -61,6 +61,7 @@ public class Game1 : Game
 
         SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize);
 
+        _spriteBatch.DrawString(font, EditorMain.FilePath, new Vector2((Window.ClientBounds.Width - font.MeasureString(EditorMain.FilePath).X - 200) * EditorMain.ScaleModifier, 20), Color.White);
         _spriteBatch.DrawString(font, _fps.msg, new Vector2((Window.ClientBounds.Width - font.MeasureString(_fps.msg).X - 20) * EditorMain.ScaleModifier, 20), Color.White);
         Updater.Draw(_spriteBatch);
 

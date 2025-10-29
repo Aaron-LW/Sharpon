@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -59,7 +56,7 @@ public static class FileDialog
                     continue;
                 }
 
-                if (filePaths[i].Substring(0, Text.Length) != Text)
+                if (filePaths[i].Substring(0, Text.Length).ToLower() != Text.ToLower())
                 {
                     filePaths.RemoveAt(i);
                     continue;
@@ -235,6 +232,7 @@ public static class FileDialog
     public static void Open()
     {
         if (Text == String.Empty) SetText(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+        if (File.Exists(Text)) SetText(Directory.GetParent(Text).ToString() + Path.DirectorySeparatorChar);
         IsOpened = true;
         CharIndex = Text.Length;
     }
