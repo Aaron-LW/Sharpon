@@ -64,7 +64,7 @@ public static class FileDialog
 
                 i++;
             }
-
+            
             _existsFile = File.Exists(Text);
             _canAccess = CanAccessPath(Text);
             _fileAmount = filePaths.Count;
@@ -85,16 +85,44 @@ public static class FileDialog
         Vector2 position = new Vector2(_gameWindow.ClientBounds.Width / 2.6f,
                                        100 * EditorMain.ScaleModifier);
 
+        float xWidth = 0;
+        for (int i = 0; i < _filePaths.Length; i++)
+        {
+            if (File.Exists(_filePaths[i]))
+            {
+                if (font.MeasureString(Path.GetFileName(_filePaths[i])).X > xWidth)
+                {
+                    xWidth = font.MeasureString(Path.GetFileName(_filePaths[i])).X;
+                }
+            }
+            else
+            {
+                if (font.MeasureString(Path.GetFileName(_filePaths[i]) + Path.DirectorySeparatorChar).X > xWidth)
+                {
+                    xWidth = font.MeasureString(Path.GetFileName(_filePaths[i]) + Path.DirectorySeparatorChar).X;
+                }
+            }
+        }
+        
+        if (font.MeasureString(Text).X > xWidth)
+        {
+            xWidth = font.MeasureString(Text).X;
+        }
+        
+
         spriteBatch.FillRectangle(new RectangleF(position - new Vector2(5, 0) * EditorMain.ScaleModifier,
-                                                 new SizeF(font.MeasureString(_filePaths.Take(40).Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur)).X + 10 * EditorMain.ScaleModifier, 20 * EditorMain.ScaleModifier)),
+                                                 new SizeF(xWidth + 10 * EditorMain.ScaleModifier, 20 * EditorMain.ScaleModifier)),
                                                  _fileDialogTextBoxColor);
 
-        spriteBatch.FillRectangle(new RectangleF(position + new Vector2(0, _spacing * EditorMain.ScaleModifier) - new Vector2(5, 0) * EditorMain.ScaleModifier,
-                                                 new SizeF(font.MeasureString(_filePaths.Take(40).Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur)).X + 10 * EditorMain.ScaleModifier, _fileAmount * _spacing * EditorMain.ScaleModifier + 10 * EditorMain.ScaleModifier)),
-                                                 _fileDialogColor);
+        if (_exists)
+        {
+            spriteBatch.FillRectangle(new RectangleF(position + new Vector2(0, _spacing * EditorMain.ScaleModifier) - new Vector2(5, 0) * EditorMain.ScaleModifier,
+                                                     new SizeF(xWidth + 10 * EditorMain.ScaleModifier, _fileAmount * _spacing * EditorMain.ScaleModifier + 10 * EditorMain.ScaleModifier)),
+                                                     _fileDialogColor);
+        }
 
         if (!_canAccess && _existsFile) spriteBatch.DrawString(font, "Can't access file (No permission)", position - new Vector2(0, _spacing) * EditorMain.ScaleModifier, Color.Red);
-        else if (!_existsFile) spriteBatch.DrawString(font, "File doesn't exist", position - new Vector2(0, _spacing) * EditorMain.ScaleModifier, Color.Red);
+        //else if (!_existsFile) spriteBatch.DrawString(font, "File doesn't exist", position - new Vector2(0, _spacing) * EditorMain.ScaleModifier, Color.Red);
 
         spriteBatch.DrawString(font, Text, position, Color.White);
 
@@ -104,18 +132,28 @@ public static class FileDialog
             {
                 if (LineIndex == i)
                 {
-                    spriteBatch.FillRectangle(new RectangleF(position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier,
-                                              new SizeF(font.MeasureString(_filePaths[i]).X, font.MeasureString(_filePaths[i]).Y)),
-                                                Color.LightBlue * 0.5f);
+                    if (File.Exists(_filePaths[i]))
+                    {
+                        spriteBatch.FillRectangle(new RectangleF(position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier,
+                                                  new SizeF(font.MeasureString(Path.GetFileName(_filePaths[i])).X, font.MeasureString(Path.GetFileName(_filePaths[i])).Y)),
+                                                  Color.LightBlue * 0.5f);
+                    }
+                    else
+                    {
+                        spriteBatch.FillRectangle(new RectangleF(position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier,
+                                                  new SizeF(font.MeasureString(Path.GetFileName(_filePaths[i]) + Path.DirectorySeparatorChar).X,
+                                                  font.MeasureString(Path.GetFileName(_filePaths[i]) + Path.DirectorySeparatorChar).Y)),
+                                                  Color.LightBlue * 0.5f);
+                    }
                 }
 
                 if (File.Exists(_filePaths[i]))
                 {
-                    spriteBatch.DrawString(font, _filePaths[i], position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier, Color.White);
+                    spriteBatch.DrawString(font, Path.GetFileName(_filePaths[i]), position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier, Color.White);
                 }
                 else
                 {
-                    spriteBatch.DrawString(font, _filePaths[i], position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier, Color.RoyalBlue);
+                    spriteBatch.DrawString(font, Path.GetFileName(_filePaths[i]) + Path.DirectorySeparatorChar, position + (new Vector2(0, 5) * EditorMain.ScaleModifier) + new Vector2(0, (i + 1) * _spacing) * EditorMain.ScaleModifier, Color.RoyalBlue);
                 }
             }
         }
@@ -180,8 +218,15 @@ public static class FileDialog
 
     public static void HandleTab()
     {
-        SetText(_filePaths[LineIndex]);
-        AddToCharIndex(_filePaths[LineIndex].Length);
+        int lineIndex = LineIndex;
+
+        SetText(_filePaths[lineIndex]);
+        if (!File.Exists(_filePaths[lineIndex]))
+        {
+            SetText(Text + Path.DirectorySeparatorChar);
+        }
+
+        AddToCharIndex(_filePaths[lineIndex].Length);
     }
 
     public static void HandleKeybinds()

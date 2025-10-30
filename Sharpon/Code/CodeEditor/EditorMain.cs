@@ -120,7 +120,6 @@ public static class EditorMain
     public static void SetSelectedLine(string line)
     {
         Line = line;
-        CharIndex = VerifyCharIndex(CharIndex);
     }
 
     public static void SetLine(string line, int lineIndex)
@@ -197,18 +196,19 @@ public static class EditorMain
 
         if (CharIndex != LineLength)
         {
-            if (Line[CharIndex] == '}' ||
-                Line[CharIndex] == ')' ||
-                Line[CharIndex] == ']' ||
-                Line[CharIndex] == '"')
+            if (Line[CharIndex] == '}' && Line[CharIndex - 1] == '{' ||
+                Line[CharIndex] == ')' && Line[CharIndex - 1] == '(' ||
+                Line[CharIndex] == ']' && Line[CharIndex - 1] == '[' ||
+                Line[CharIndex] == '"' && Line[CharIndex - 1] == '"' )
             {
                 SetSelectedLine(Line.Remove(CharIndex - 1, 2));
-                if (Line[CharIndex - 1] != ' ') AddToCharIndex(-1);
+                AddToCharIndex(-1);
                 return;
             }
         }
 
         SetSelectedLine(Line.Remove(CharIndex - 1, 1));
+        AddToCharIndex(-1);
     }
 
     public static void HandleTab()
@@ -232,7 +232,8 @@ public static class EditorMain
                         }
                     }
 
-                    SetSelectedLine(Line.Substring(spaces, LineLength - spaces));
+                    SetSelectedLine(Line.Remove(0, spaces));
+                    CharIndex = VerifyCharIndex(CharIndex - spaces);
                 }
             }
             else
@@ -412,8 +413,7 @@ public static class EditorMain
                     InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
                 }
             }
-
-
+            
             ResetKeyTimer();
             _keyPressed = true;
         }
@@ -472,7 +472,7 @@ public static class EditorMain
         {
             for (int i = startIndex + 1; i < line.Length; i++)
             {
-                if (line[i] == ' ' || line[i] == '.' || line[i] == ',') return i;
+                if (line[i] == ' ' || line[i] == '.' || line[i] == ',' || line[i] == ')') return i;
             }
         }
 
@@ -489,7 +489,7 @@ public static class EditorMain
             for (int i = startIndex - 1; i > 0; i--)
             {
                 if (line[i] != ' ') return i + 1;
-                if (line[i] == '.' || line[i] == ',') return i + 1;
+                if (line[i] == '.' || line[i] == ',' || line[i] == '(') return i + 1;
             }
         }
         else if (line[startIndex] != ' ')
@@ -498,7 +498,7 @@ public static class EditorMain
             for (int i = startIndex - 1; i > 0; i--)
             {
                 if (line[i] == ' ') return i + 1;
-                if (line[i] == '.' || line[i] == ',') return i + 1;
+                if (line[i] == '.' || line[i] == ',' || line[i] == '(') return i + 1;
             }
         }
 

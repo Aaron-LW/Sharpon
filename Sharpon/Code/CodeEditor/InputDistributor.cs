@@ -197,7 +197,7 @@ public static class InputDistributor
                 FileDialog.HandleKeybinds();
                 return;
         }
-
+        
         throw new NotImplementedException($"Couldn't handle keybinds of {_inputReceiver}; Wasn't set up for HandleKeybinds()");
     }
     

@@ -51,7 +51,7 @@ public static class InputHandler
                     break;
             }
         }
-
+        
         InputDistributor.SetSelectedLine(InputDistributor.SelectedLine.Insert(InputDistributor.CharIndex, pressedKeys));
         InputDistributor.AddToCharIndex(pressedKeys.Length);
 
@@ -68,7 +68,7 @@ public static class InputHandler
     {
         _charQueue.Add(character);
     }
-
+    
     private static void TextInputHandler(object sender, TextInputEventArgs e)
     {
         char c = e.Character;
