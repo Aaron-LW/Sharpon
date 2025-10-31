@@ -8,6 +8,7 @@ using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
 
 public static class EditorMain
 {
@@ -22,6 +23,7 @@ public static class EditorMain
     private static Vector2 _codePosition = new Vector2(50, _codeMaxY);
     private static Vector2 _cursorPosition;
     private static float _textOpacity = 1;
+    private static Vector2 _lineBlockPosition;
 
     private static float _keyTimer = 0;
     private static bool _keyPressed = false;
@@ -54,9 +56,28 @@ public static class EditorMain
 
         for (int i = 0; i < Lines.Count; i++)
         {
-            spriteBatch.DrawString(font, Lines[i], new Vector2(_codePosition.X, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White * _textOpacity);
+            spriteBatch.DrawString(font, i.ToString(), new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X - 10 * ScaleModifier, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White);
+            
+            
+            if (i == LineIndex)
+            {
+                Vector2 position = (new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X - 10 * ScaleModifier,
+                                               _codePosition.Y + (LineIndex * _lineSpacing)) - new Vector2(1, 1)) * ScaleModifier;
+
+                _lineBlockPosition = new Vector2(MathHelper.Lerp(_lineBlockPosition.X, position.X, cursorSpeed * Time.DeltaTime),
+                                                 MathHelper.Lerp(_lineBlockPosition.Y, position.Y, cursorSpeed * Time.DeltaTime));
+                
+                spriteBatch.FillRectangle(new RectangleF(_lineBlockPosition,
+                                                         new SizeF(font.MeasureString(i.ToString()).X + 2 * ScaleModifier,
+                                                         font.MeasureString(i.ToString()).Y + 2 * ScaleModifier)),
+                                                         Color.White * 0.5f);
+            }
+            
+            spriteBatch.DrawString(font, Lines[i], new Vector2(_codePosition.X, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White);
         }
-        _cursorPosition = new Vector2(MathHelper.Lerp(_cursorPosition.X, _codePosition.X + font.MeasureString(Lines[LineIndex].Substring(0, CharIndex)).X / ScaleModifier - (font.MeasureString("|") / 2).X, cursorSpeed * Time.DeltaTime), MathHelper.Lerp(_cursorPosition.Y, _codePosition.Y + (LineIndex * _lineSpacing), cursorSpeed * Time.DeltaTime));
+        _cursorPosition = new Vector2(MathHelper.Lerp(_cursorPosition.X, _codePosition.X + font.MeasureString(Lines[LineIndex].Substring(0, CharIndex)).X / ScaleModifier - (font.MeasureString("|") / 2).X, 
+                                                      cursorSpeed * Time.DeltaTime), 
+                                                      MathHelper.Lerp(_cursorPosition.Y, _codePosition.Y + (LineIndex * _lineSpacing), cursorSpeed * Time.DeltaTime));
         spriteBatch.DrawString(font, "|", _cursorPosition * ScaleModifier, Color.White);
 
         //spriteBatch.DrawString(font, $"Lines: {Lines.Count}", new Vector2(150, 20) * ScaleModifier, Color.White);

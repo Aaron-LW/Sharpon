@@ -239,6 +239,7 @@ public static class FileDialog
 
     public static void HandleTab()
     {
+        if (_filePaths.Length == 0) return;
         int lineIndex = LineIndex;
 
         SetText(_filePaths[lineIndex]);
