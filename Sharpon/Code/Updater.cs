@@ -7,6 +7,7 @@ public static class Updater
     {
         EditorMain.Start(gameWindow);
         FileDialog.Start(gameWindow);
+        NotificationManager.Start(gameWindow);
     }
 
     public static void Update(GameTime gameTime)
@@ -16,6 +17,7 @@ public static class Updater
         InputHandler.Update();
         InputDistributor.HandleKeybinds();
         FileDialog.Update();
+        NotificationManager.Update();
         Input.SwitchStates();
     }
 
@@ -23,5 +25,6 @@ public static class Updater
     {
         EditorMain.Draw(spriteBatch);
         FileDialog.Draw(spriteBatch);
+        NotificationManager.Draw(spriteBatch);
     }
 }

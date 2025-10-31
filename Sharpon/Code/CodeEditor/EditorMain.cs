@@ -154,13 +154,16 @@ public static class EditorMain
             {
                 LineIndex = Lines.Count - 1;
             }
+            
+            //NotificationManager.CreateNotification("Loaded file: " + filePath, 3);
 
             SetCharIndex(LineLength);
             FilePath = filePath;
         }
         else
         {
-            Console.WriteLine("File at path: " + filePath + " doesn't exist");
+            NotificationManager.CreateNotification("No file at " + filePath, 5, NotificationType.Error);
+            //Console.WriteLine("File at path: " + filePath);
         }
     }
 
@@ -168,6 +171,7 @@ public static class EditorMain
     {
         if (!File.Exists(filePath)) File.Create(filePath);
         File.WriteAllText(filePath, String.Join("\r\n", Lines));
+        NotificationManager.CreateNotification("Saved File", 3);
     }
 
     public static void HandleBackspace()
@@ -403,6 +407,7 @@ public static class EditorMain
             if (Input.IsKeyPressed(Keys.R))
             {
                 LoadFile(FilePath);
+                NotificationManager.CreateNotification("Reloaded file", 3);
             }
 
             if (Input.IsKeyDown(Keys.LeftShift))
@@ -412,6 +417,12 @@ public static class EditorMain
                     FileDialog.Open();
                     InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
                 }
+            }
+            
+            if (Input.IsKeyPressed(Keys.B))
+            {
+                Console.WriteLine("Vrace");
+                SetCharIndex(GetNextNonBraceIndex());
             }
             
             ResetKeyTimer();
@@ -503,5 +514,38 @@ public static class EditorMain
         }
 
         return 0;
+    }
+    
+    private static int GetNextNonBraceIndex()
+    {
+        if (CharIndex == LineLength) return LineLength;
+        if (LineLength == 0) return 0;
+        
+        int startIndex = CharIndex;
+        
+        for (int i = startIndex; i < LineLength; i++)
+        {
+            if (Line[i] == ')' ||
+                Line[i] == '}' ||
+                Line[i] == ']')
+            {
+                startIndex = i;
+                break;
+            }
+        }
+
+        for (int i = startIndex; i < LineLength + 1; i++)
+        {
+            if (i == LineLength) return LineLength;
+            
+            if (Line[i] != ')' &&
+                Line[i] != '}' &&
+                Line[i] != ']')
+            {
+                return i;
+            }
+        }
+        
+        return CharIndex;
     }
 }

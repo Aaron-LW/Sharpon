@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
@@ -46,11 +46,6 @@ public class Game1 : Game
     {
         _fps.Update(gameTime);
         Updater.Update(gameTime);
-
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
-
-
         base.Update(gameTime);
     }
 
@@ -61,13 +56,13 @@ public class Game1 : Game
 
         SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize * EditorMain.ScaleModifier);
 
-        _spriteBatch.DrawString(font, EditorMain.FilePath, new Vector2((Window.ClientBounds.Width - font.MeasureString(EditorMain.FilePath).X - 200) * EditorMain.ScaleModifier, 20), Color.White);
-        _spriteBatch.DrawString(font, _fps.msg, new Vector2((Window.ClientBounds.Width - font.MeasureString(_fps.msg).X - 20) * EditorMain.ScaleModifier, 20), Color.White);
+        _spriteBatch.DrawString(font, EditorMain.FilePath, new Vector2((Window.ClientBounds.Width - font.MeasureString(EditorMain.FilePath).X - 200), 20), Color.White);
+        _spriteBatch.DrawString(font, _fps.msg, new Vector2((Window.ClientBounds.Width - font.MeasureString(_fps.msg).X - 20), 20), Color.White);
         Updater.Draw(_spriteBatch);
 
         _fps.frames++;
 
         _spriteBatch.End();
-        base.Draw(gameTime);
+        //base.Draw(gameTime);
     }
 }

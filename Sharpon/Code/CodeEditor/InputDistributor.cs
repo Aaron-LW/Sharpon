@@ -12,7 +12,9 @@ public static class InputDistributor
     public static string SelectedLine => GetSelectedLine();
     public static int CharIndex => GetCharIndex();
     public static int LineIndex => GetLineIndex();
-    public static int LineLength = GetSelectedLine().Length;
+    public static int LineLength => GetSelectedLine().Length;
+    public static char SelectedChar => GetSelectedChar();
+    public static char PreviousChar => GetPreviousChar();
 
     private static InputReceiver _inputReceiver = InputReceiver.Editor;
 
@@ -135,6 +137,28 @@ public static class InputDistributor
         }
 
         throw new NotImplementedException($"Couldn't add to character index of {_inputReceiver}; Wasn't set up for AddToCharIndex()");
+    }
+    
+    public static char GetSelectedChar()
+    {
+        return SelectedLine[CharIndex];
+    }
+    
+    public static char GetPreviousChar()
+    {
+        if (CharIndex == 0)
+        {
+            if (LineLength > 0)
+            {
+                return SelectedLine[0];
+            }
+            else
+            {
+                return ' ';
+            }
+        }
+        
+        return SelectedLine[CharIndex - 1];
     }
 
     public static void HandleBackspace()

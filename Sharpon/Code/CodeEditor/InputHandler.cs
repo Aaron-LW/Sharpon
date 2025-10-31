@@ -52,13 +52,15 @@ public static class InputHandler
             }
         }
         
+        char previousChar = InputDistributor.PreviousChar;
+        
         InputDistributor.SetSelectedLine(InputDistributor.SelectedLine.Insert(InputDistributor.CharIndex, pressedKeys));
         InputDistributor.AddToCharIndex(pressedKeys.Length);
 
-        if (pressedKeys.Contains(')') ||
-            pressedKeys.Contains('}') ||
-            pressedKeys.Contains(']') ||
-            pressedKeys.Contains('"') && !_suppressQoutationMark)
+        if (pressedKeys.Contains(')') && previousChar == '(' ||
+            pressedKeys.Contains('}') && previousChar == '{' ||
+            pressedKeys.Contains(']') && previousChar == '[' ||
+            pressedKeys.Contains('"') && previousChar == '"' && !_suppressQoutationMark)
         {
             InputDistributor.AddToCharIndex(-1);
         }

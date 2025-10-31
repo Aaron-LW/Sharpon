@@ -194,6 +194,27 @@ public static class FileDialog
         if (CharIndex == 0) return;
         if (Text.Length <= 0) return;
 
+        if (Input.IsKeyDown(Keys.LeftControl))
+        {
+            for (int i = Text.Length - 1; i > 0; i--)
+            {
+                if (Text[i - 1] == Path.DirectorySeparatorChar)
+                {
+                    SetText(Text.Remove(i));
+                    AddToCharIndex(Text.Length - i);
+                    return;
+                }
+                
+                if (i == 0)
+                {
+                    SetText("");
+                    SetCharIndex(0);
+                    return;
+                }
+            }
+            return;
+        }
+
         if (CharIndex != Text.Length)
         {
             if (Text[CharIndex] == ')')
