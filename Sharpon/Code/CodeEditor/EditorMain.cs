@@ -30,6 +30,7 @@ public static class EditorMain
     private static bool _keyPressed = false;
     private static float _baseKeyTimer = 0.2f;
     private static float _baseFastKeyTimer = 0.04f;
+    private static float _baseVeryFastKeyTimer = 0.015f;
 
     public static FontSystem FontSystem = new FontSystem();
     public static List<string> Lines = new List<string>() { "" };
@@ -420,11 +421,18 @@ public static class EditorMain
         {
             if (LineIndex != 0)
             {
+                if (Input.IsKeyDown(Keys.LeftAlt))
+                {
+                    string temp = Lines[LineIndex - 1];
+                    SetLine(Line, LineIndex - 1);
+                    SetSelectedLine(temp);
+                }
+                
                 AddToLineIndex(-1);
                 SetCharIndex(LineLength);
             }
 
-            ResetKeyTimer();
+            ResetKeyTimer(Input.IsKeyDown(Keys.LeftControl));
             _keyPressed = true;
         }
 
@@ -432,11 +440,18 @@ public static class EditorMain
         {
             if (LineIndex != Lines.Count - 1)
             {
+                if (Input.IsKeyDown(Keys.LeftAlt))
+                {
+                    string temp = Lines[LineIndex + 1];
+                    SetLine(Line, LineIndex + 1);
+                    SetSelectedLine(temp);
+                }
+                
                 AddToLineIndex(1);
                 SetCharIndex(LineLength);
             }
-
-            ResetKeyTimer();
+            
+            ResetKeyTimer(Input.IsKeyDown(Keys.LeftControl));
             _keyPressed = true;
         }
         
@@ -497,10 +512,10 @@ public static class EditorMain
             _keyPressed = true;
         }
 
-        if (!Input.IsKeyDown(Keys.Right) &&
-            !Input.IsKeyDown(Keys.Left) &&
-            !Input.IsKeyDown(Keys.Up) &&
+        if (!Input.IsKeyDown(Keys.Up) &&
             !Input.IsKeyDown(Keys.Down) &&
+            !Input.IsKeyDown(Keys.Left) &&
+            !Input.IsKeyDown(Keys.Right) &&
             !Input.IsKeyDown(Keys.X))
         {
             _keyPressed = false;
@@ -526,15 +541,29 @@ public static class EditorMain
         }
     }
     
-    private static void ResetKeyTimer()
+    private static void ResetKeyTimer(bool fast = false)
     {
-        if (_keyPressed)
+        if (fast)
         {
-            _keyTimer = _baseFastKeyTimer;
+            if (_keyPressed)
+            {
+                _keyTimer = _baseVeryFastKeyTimer;
+            }
+            else
+            {
+                _keyTimer = _baseFastKeyTimer;
+            }
         }
         else
         {
-            _keyTimer = _baseKeyTimer;
+            if (_keyPressed)
+            {
+                _keyTimer = _baseFastKeyTimer;
+            }    
+            else
+            {
+                _keyTimer = _baseKeyTimer;
+            }
         }
     }
 
