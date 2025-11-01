@@ -58,6 +58,10 @@ public class Game1 : Game
 
         _spriteBatch.DrawString(font, EditorMain.FilePath, new Vector2((Window.ClientBounds.Width - font.MeasureString(EditorMain.FilePath).X - 200), 20), Color.White);
         _spriteBatch.DrawString(font, _fps.msg, new Vector2((Window.ClientBounds.Width - font.MeasureString(_fps.msg).X - 20), 20), Color.White);
+        
+        if (EditorMain.UnsavedChanges) _spriteBatch.DrawString(font, "Unsaved changes", 
+                                new Vector2((Window.ClientBounds.Width - font.MeasureString(EditorMain.UnsavedChanges.ToString()).X - font.MeasureString(EditorMain.FilePath).X - 350), 20), Color.White);
+        
         Updater.Draw(_spriteBatch);
 
         _fps.frames++;

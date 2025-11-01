@@ -15,6 +15,7 @@ public static class EditorMain
     public static float BaseFontSize = 20;
     public static float ScaleModifier => MathF.Round((float)_gameWindow.ClientBounds.Width / 1920, 2);
     public static string FilePath { get; private set; } = "/media/C#/test/Program.cs";
+    public static bool UnsavedChanges = false;
 
     private static GameWindow _gameWindow;
     private static float _lineSpacing => (float)(1 * BaseFontSize);
@@ -61,15 +62,15 @@ public static class EditorMain
             
             if (i == LineIndex)
             {
-                Vector2 position = (new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X - 10 * ScaleModifier,
-                                               _codePosition.Y + (LineIndex * _lineSpacing)) - new Vector2(1, 1)) * ScaleModifier;
+                Vector2 position = new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X - 10 * ScaleModifier,
+                                               _codePosition.Y + (LineIndex * _lineSpacing)) * ScaleModifier;
 
                 _lineBlockPosition = new Vector2(MathHelper.Lerp(_lineBlockPosition.X, position.X, cursorSpeed * Time.DeltaTime),
                                                  MathHelper.Lerp(_lineBlockPosition.Y, position.Y, cursorSpeed * Time.DeltaTime));
                 
                 spriteBatch.FillRectangle(new RectangleF(_lineBlockPosition,
-                                                         new SizeF(font.MeasureString(i.ToString()).X + 2 * ScaleModifier,
-                                                         font.MeasureString(i.ToString()).Y + 2 * ScaleModifier)),
+                                                         new SizeF(font.MeasureString(i.ToString()).X,
+                                                         font.MeasureString(i.ToString()).Y)),
                                                          Color.White * 0.5f);
             }
             
@@ -140,12 +141,14 @@ public static class EditorMain
 
     public static void SetSelectedLine(string line)
     {
+        if (Line != line) UnsavedChanges = true;
         Line = line;
     }
 
     public static void SetLine(string line, int lineIndex)
     {
         if (lineIndex > Lines.Count || lineIndex < 0) return;
+        if (Lines[lineIndex]  != line) UnsavedChanges = true;
         Lines[lineIndex] = line;
     }
 
@@ -161,6 +164,7 @@ public static class EditorMain
             Lines[0] = "";
         }
 
+        UnsavedChanges = true;
         LineIndex = VerifyLineIndex(LineIndex);
         CharIndex = VerifyCharIndex(CharIndex);
     }
@@ -169,6 +173,8 @@ public static class EditorMain
     {
         if (File.Exists(filePath))
         {
+            if (UnsavedChanges) SaveFile(FilePath);
+            
             //Lines = Convert.ToHexString(File.ReadAllBytes(filePath)).Split(["\r\n", "\n"], StringSplitOptions.None).ToList();
             Lines = File.ReadAllText(filePath).Split(["\r\n", "\n"], StringSplitOptions.None).ToList();
             if (Lines.Count - 1 < LineIndex)
@@ -193,6 +199,7 @@ public static class EditorMain
         if (!File.Exists(filePath)) File.Create(filePath);
         File.WriteAllText(filePath, String.Join("\r\n", Lines));
         NotificationManager.CreateNotification("Saved File", 3);
+        UnsavedChanges = false;
     }
 
     public static void HandleBackspace()
@@ -323,6 +330,7 @@ public static class EditorMain
             Lines.Insert(LineIndex + 1, spacesString);
             AddToLineIndex(1);
             SetCharIndex(CharIndex);
+            UnsavedChanges = true;
             return;
         }
 
@@ -339,6 +347,7 @@ public static class EditorMain
                 HandleTab();
 
                 SetCharIndex(CharIndex);
+                UnsavedChanges = true;
                 return;
             }
 
@@ -349,6 +358,7 @@ public static class EditorMain
         AddToLineIndex(1);
         SetCharIndex(spaces);
         if (tab) HandleTab();
+        UnsavedChanges = true;
     }
 
     public static void HandleKeybinds()
