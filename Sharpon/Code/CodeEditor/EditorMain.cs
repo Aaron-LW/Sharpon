@@ -48,8 +48,16 @@ public static class EditorMain
         FontSystem.AddFont(File.ReadAllBytes(fontPath));
         _gameWindow = gameWindow;
         
-        FileDialog.Open();
-        InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
+        string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LastOpenedFile.txt");
+        if (File.Exists(file))
+        {
+            LoadFile(File.ReadAllText(file));
+        }
+        else
+        {
+            FileDialog.Open();
+            InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
+        }
     }
     
     public static void Draw(SpriteBatch spriteBatch)
@@ -475,6 +483,16 @@ public static class EditorMain
                 BaseFontSize = Math.Clamp(BaseFontSize - 3, 1, 9999999);
             }
             
+            if (Input.IsKeyPressed(Keys.A))
+            {
+                SetCharIndex(GetFirstNonSpaceCharacterIndex());
+            }
+            
+            if (Input.IsKeyPressed(Keys.D))
+            {
+                SetCharIndex(LineLength);
+            }
+            
             ResetKeyTimer();
             _keyPressed = true;
         }
@@ -597,5 +615,18 @@ public static class EditorMain
        }
         
         return CharIndex;
+    }
+    
+    private static int GetFirstNonSpaceCharacterIndex()
+    {
+        for (int i = 0; i < LineLength; i++)
+        {
+            if (Line[i] != ' ')
+            {
+                return i;
+            }
+        }
+        
+        return LineLength;
     }
 }
