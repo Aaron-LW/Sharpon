@@ -14,7 +14,7 @@ public static class EditorMain
 {
     public static float BaseFontSize = 20;
     public static float ScaleModifier => MathF.Round((float)_gameWindow.ClientBounds.Width / 1920, 2);
-    public static string FilePath { get; private set; } = "/media/C#/test/Program.cs";
+    public static string FilePath { get; private set; } = "";
     public static bool UnsavedChanges = false;
 
     private static GameWindow _gameWindow;
@@ -47,7 +47,9 @@ public static class EditorMain
         string fontPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts", "JetBrainsMonoNLNerdFont-Bold.ttf"));
         FontSystem.AddFont(File.ReadAllBytes(fontPath));
         _gameWindow = gameWindow;
-        LoadFile(FilePath);
+        
+        FileDialog.Open();
+        InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
     }
     
     public static void Draw(SpriteBatch spriteBatch)
@@ -57,12 +59,14 @@ public static class EditorMain
 
         for (int i = 0; i < Lines.Count; i++)
         {
-            spriteBatch.DrawString(font, i.ToString(), new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X - 10 * ScaleModifier, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White);
+            spriteBatch.DrawString(font, i.ToString(), 
+                                   new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X / ScaleModifier - 15 * ScaleModifier, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, 
+                                   Color.White);
             
             
             if (i == LineIndex)
             {
-                Vector2 position = new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X - 10 * ScaleModifier,
+                Vector2 position = new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X / ScaleModifier - 15 * ScaleModifier,
                                                _codePosition.Y + (LineIndex * _lineSpacing)) * ScaleModifier;
 
                 _lineBlockPosition = new Vector2(MathHelper.Lerp(_lineBlockPosition.X, position.X, cursorSpeed * Time.DeltaTime),
@@ -79,6 +83,7 @@ public static class EditorMain
         _cursorPosition = new Vector2(MathHelper.Lerp(_cursorPosition.X, _codePosition.X + font.MeasureString(Lines[LineIndex].Substring(0, CharIndex)).X / ScaleModifier - (font.MeasureString("|") / 2).X, 
                                                       cursorSpeed * Time.DeltaTime), 
                                                       MathHelper.Lerp(_cursorPosition.Y, _codePosition.Y + (LineIndex * _lineSpacing), cursorSpeed * Time.DeltaTime));
+                                                      
         spriteBatch.DrawString(font, "|", _cursorPosition * ScaleModifier, Color.White);
 
         //spriteBatch.DrawString(font, $"Lines: {Lines.Count}", new Vector2(150, 20) * ScaleModifier, Color.White);
@@ -173,6 +178,10 @@ public static class EditorMain
     {
         if (File.Exists(filePath))
         {
+            string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LastOpenedFile.txt");
+            if (!File.Exists(file)) File.Create(file);
+            File.WriteAllText(file, filePath);
+            
             if (UnsavedChanges) SaveFile(FilePath);
             
             //Lines = Convert.ToHexString(File.ReadAllBytes(filePath)).Split(["\r\n", "\n"], StringSplitOptions.None).ToList();
@@ -445,6 +454,7 @@ public static class EditorMain
             {
                 if (Input.IsKeyPressed(Keys.P))
                 {
+                    FileDialog.SetText(FilePath);
                     FileDialog.Open();
                     InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
                 }
@@ -452,7 +462,6 @@ public static class EditorMain
 
             if (Input.IsKeyPressed(Keys.B))
             {
-                Console.WriteLine("Vrace");
                 SetCharIndex(GetNextNonBraceIndex());
             }
 
