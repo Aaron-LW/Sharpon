@@ -328,7 +328,7 @@ public static class EditorMain
 
         if (insert != String.Empty)
         {
-            if (insert[0] == '}')
+            if (insert[0] == '}' && InputDistributor.PreviousChar == '{')
             {
                 HandleBackspace();
                 if (Line.Length > 0) SetSelectedLine(Line.Remove(Line.Length - insert.Length));
@@ -439,11 +439,21 @@ public static class EditorMain
                     InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
                 }
             }
-            
+
             if (Input.IsKeyPressed(Keys.B))
             {
                 Console.WriteLine("Vrace");
                 SetCharIndex(GetNextNonBraceIndex());
+            }
+
+            if (Input.IsKeyPressed(Keys.M))
+            {
+                BaseFontSize += 3;
+            }
+            
+            if (Input.IsKeyPressed(Keys.N))
+            {
+                BaseFontSize = Math.Clamp(BaseFontSize - 3, 1, 9999999);
             }
             
             ResetKeyTimer();
@@ -565,7 +575,7 @@ public static class EditorMain
             {
                 return i;
             }
-        }
+       }
         
         return CharIndex;
     }
