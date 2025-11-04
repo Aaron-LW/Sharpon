@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -226,6 +227,13 @@ public static class EditorMain
         {
             if (LineIndex != 0)
             {
+                if (LineIndex == Lines.Count - 1)
+                {
+                    RemoveLine(LineIndex);
+                    SetCharIndex(LineLength);
+                    return;
+                }
+                
                 string temp = Line;
                 RemoveLine(LineIndex);
                 AddToLineIndex(-1);
@@ -502,10 +510,16 @@ public static class EditorMain
             {
                 SetCharIndex(GetFirstNonSpaceCharacterIndex());
             }
-            
+
             if (Input.IsKeyPressed(Keys.D))
             {
                 SetCharIndex(LineLength);
+            }
+            
+            if (Input.IsKeyPressed(Keys.Z))
+            {
+                Terminal.Toggle();
+                InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Terminal);
             }
             
             ResetKeyTimer();
@@ -587,7 +601,7 @@ public static class EditorMain
         return line.Length;
     }
 
-    private static int NextControlLeftArrowIndex(int startIndex, string line)
+    public static int NextControlLeftArrowIndex(int startIndex, string line)
     {
         startIndex--;
 

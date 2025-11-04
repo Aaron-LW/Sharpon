@@ -8,6 +8,7 @@ public static class Updater
         EditorMain.Start(gameWindow);
         FileDialog.Start(gameWindow);
         NotificationManager.Start(gameWindow);
+        Terminal.Start(gameWindow);
     }
 
     public static void Update(GameTime gameTime)
@@ -25,6 +26,7 @@ public static class Updater
     {
         EditorMain.Draw(spriteBatch);
         FileDialog.Draw(spriteBatch);
+        Terminal.Draw(spriteBatch);
         NotificationManager.Draw(spriteBatch);
     }
 }

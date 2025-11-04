@@ -347,4 +347,17 @@ public static class FileDialog
             return false;
         }
     }
+
+    public static string TryGetSolutionDirectoryInfo(string currentPath = null)
+    {
+        var directory = new DirectoryInfo(
+            currentPath ?? Directory.GetCurrentDirectory());
+        while (directory != null && !directory.GetFiles("*.sln").Any())
+        {
+            directory = directory.Parent;
+        }
+        
+        if (directory == null) return null;
+        return directory.FullName;
+    }
 }

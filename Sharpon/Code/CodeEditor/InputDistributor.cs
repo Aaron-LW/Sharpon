@@ -6,7 +6,8 @@ public static class InputDistributor
     public enum InputReceiver
     {
         Editor,
-        FileDialog
+        FileDialog,
+        Terminal
     }
 
     public static string SelectedLine => GetSelectedLine();
@@ -29,6 +30,10 @@ public static class InputDistributor
             case InputReceiver.FileDialog:
                 FileDialog.SetText(line);
                 return;
+                
+            case InputReceiver.Terminal:
+                Terminal.SetText(line);
+                return;
         }
 
         throw new NotImplementedException($"Couldn't set selected line of {_inputReceiver}; Wasn't set up for SetSelectedLine");
@@ -43,6 +48,9 @@ public static class InputDistributor
 
             case InputReceiver.FileDialog:
                 return FileDialog.Text;
+                
+            case InputReceiver.Terminal:
+                return Terminal.Text;
         }
 
         throw new NotImplementedException($"Couldn't get selected line of {_inputReceiver}; Wasn't set up for GetSelectedLine");
@@ -59,6 +67,9 @@ public static class InputDistributor
             case InputReceiver.FileDialog:
                 FileDialog.SetText("");
                 return;
+               
+            case InputReceiver.Terminal:
+                return;
         }
 
         throw new NotImplementedException($"Couldn't remove selected line of {_inputReceiver}; Wasn't set up for RemoveSelectedLine");
@@ -72,6 +83,9 @@ public static class InputDistributor
                 return EditorMain.LineIndex;
 
             case InputReceiver.FileDialog:
+                return 0;
+                
+            case InputReceiver.Terminal:
                 return 0;
         }
 
@@ -87,6 +101,9 @@ public static class InputDistributor
                 return;
 
             case InputReceiver.FileDialog:
+                return;
+                
+            case InputReceiver.Terminal:
                 return;
         }
 
@@ -104,6 +121,9 @@ public static class InputDistributor
             case InputReceiver.FileDialog:
                 FileDialog.SetCharIndex(charIndex);
                 return;
+                
+            case InputReceiver.Terminal:
+                return;
         }
 
         throw new NotImplementedException($"Couldn't set character index of {_inputReceiver}; Wasn't set up for SetCharIndex()");
@@ -118,6 +138,9 @@ public static class InputDistributor
 
             case InputReceiver.FileDialog:
                 return FileDialog.CharIndex;
+                
+            case InputReceiver.Terminal:
+                return Terminal.CharIndex;
         }
 
         throw new NotImplementedException($"Couldn't get character index of {_inputReceiver}; Wasn't set up for GetCharIndex()");
@@ -133,6 +156,10 @@ public static class InputDistributor
 
             case InputReceiver.FileDialog:
                 FileDialog.AddToCharIndex(amount);
+                return;
+                
+            case InputReceiver.Terminal:
+                Terminal.AddToCharIndex(amount);
                 return;
         }
 
@@ -172,6 +199,10 @@ public static class InputDistributor
             case InputReceiver.FileDialog:
                 FileDialog.HandleBackspace();
                 return;
+                
+            case InputReceiver.Terminal:
+                Terminal.HandleBackspace();
+                return;
         }
 
         throw new NotImplementedException($"Couldn't handle backspace of {_inputReceiver}; Wasn't set up for HandleBackspace()");
@@ -187,6 +218,10 @@ public static class InputDistributor
 
             case InputReceiver.FileDialog:
                 FileDialog.HandleEnter();
+                return;
+                
+            case InputReceiver.Terminal:
+                Terminal.HandleEnter();
                 return;
         }
 
@@ -204,6 +239,9 @@ public static class InputDistributor
             case InputReceiver.FileDialog:
                 FileDialog.HandleTab();
                 return;
+                
+            case InputReceiver.Terminal:
+                return;
         }
 
         throw new NotImplementedException($"Couldn't handle tab of {_inputReceiver}; Wasn't set up for HandleTab()");
@@ -219,6 +257,10 @@ public static class InputDistributor
 
             case InputReceiver.FileDialog:
                 FileDialog.HandleKeybinds();
+                return;
+                
+            case InputReceiver.Terminal:
+                Terminal.HandleKeybinds();
                 return;
         }
         
