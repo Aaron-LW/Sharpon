@@ -282,6 +282,22 @@ public static class FileDialog
             ResetKeyTimer();
             _keyPressed = true;
         }
+        
+        if (Input.IsKeyDown(Keys.LeftControl))
+        {
+            if (Input.IsKeyPressed(Keys.Z))
+            {
+                Close();
+                Terminal.Toggle();
+                InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Terminal);
+            }
+        }
+        
+        if (Input.IsKeyPressed(Keys.Escape))
+        {
+            Close();
+            InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
+        }
 
         if (!Input.IsKeyDown(Keys.Right) &&
             !Input.IsKeyDown(Keys.Left) &&

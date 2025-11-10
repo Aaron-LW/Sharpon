@@ -465,9 +465,12 @@ public static class EditorMain
         
         if (Input.IsKeyDown(Keys.LeftControl) && _keyTimer <= 0)
         {
-            if (Input.IsKeyDown(Keys.X))
+            if (Input.IsKeyDown(Keys.X) && _keyTimer <= 0)
             {
                 RemoveLine(LineIndex);
+                
+                ResetKeyTimer();
+                _keyPressed = true;
             }
 
             if (Input.IsKeyPressed(Keys.S))
@@ -498,12 +501,12 @@ public static class EditorMain
 
             if (Input.IsKeyPressed(Keys.M))
             {
-                BaseFontSize += 3;
+                //BaseFontSize += 3;
             }
             
             if (Input.IsKeyPressed(Keys.N))
             {
-                BaseFontSize = Math.Clamp(BaseFontSize - 3, 1, 9999999);
+                //BaseFontSize = Math.Clamp(BaseFontSize - 3, 1, 9999999);
             }
             
             if (Input.IsKeyPressed(Keys.A))
@@ -522,15 +525,57 @@ public static class EditorMain
                 InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Terminal);
             }
             
-            ResetKeyTimer();
-            _keyPressed = true;
+            //Up
+            if (Input.IsKeyDown(Keys.I) && _keyTimer <= 0)
+            {
+                AddToLineIndex(-1);
+                SetCharIndex(LineLength);
+                
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
+            
+            //Down
+            if (Input.IsKeyDown(Keys.K) && _keyTimer <= 0)
+            {
+                AddToLineIndex(1);
+                SetCharIndex(LineLength);
+                
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
+            
+            //Left
+            if (Input.IsKeyDown(Keys.J) && _keyTimer <= 0)
+            {
+                AddToCharIndex(-1);
+                
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
+            
+            //Right
+            if (Input.IsKeyDown(Keys.L) && _keyTimer <= 0)
+            {
+                AddToCharIndex(1);
+                
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
+            
+            //ResetKeyTimer();
+            //_keyPressed = true;
         }
 
         if (!Input.IsKeyDown(Keys.Up) &&
             !Input.IsKeyDown(Keys.Down) &&
             !Input.IsKeyDown(Keys.Left) &&
             !Input.IsKeyDown(Keys.Right) &&
-            !Input.IsKeyDown(Keys.X))
+            !Input.IsKeyDown(Keys.X) &&
+            !Input.IsKeyDown(Keys.I) &&
+            !Input.IsKeyDown(Keys.K) &&
+            !Input.IsKeyDown(Keys.J) &&
+            !Input.IsKeyDown(Keys.L))
         {
             _keyPressed = false;
             _keyTimer = 0;

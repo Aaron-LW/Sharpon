@@ -27,7 +27,10 @@ public static class InputHandler
 
         string pressedKeys = stringBuilder.ToString();
         _charQueue.Clear();
-
+        
+        InputDistributor.HandleKeybinds();
+        if (Input.IsKeyDown(Keys.LeftControl)) return;
+        
         for (int i = 0; i < pressedKeys.Length; i++)
         {
             switch (pressedKeys[i])

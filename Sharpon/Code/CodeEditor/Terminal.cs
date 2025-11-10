@@ -33,6 +33,7 @@ public static class Terminal
     {
         Rectangle windowBounds = _gameWindow.ClientBounds;
         float terminalSpeed = 20;
+        
         if (!IsOpened)
         {
             if (_terminalPosition.Y > windowBounds.Height) return;
@@ -52,33 +53,45 @@ public static class Terminal
 
         spriteBatch.DrawLine(_terminalPosition, _terminalPosition + new Vector2(windowBounds.Width, 0), Color.LightBlue, 3);
         
-        int lineStartDrawIndex = _lines.Count - 15;
-        if (lineStartDrawIndex < 0)
-        {
-            lineStartDrawIndex = 0;
-        }
-        
         SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize * EditorMain.ScaleModifier);
-        int index = 0;
-        for (int i = lineStartDrawIndex; i < _lines.Count; i++)
-        {
-            spriteBatch.DrawString(font, _lines[i], _terminalPosition + new Vector2(10, 10 + (_spacing * index)) * EditorMain.ScaleModifier, Color.White);
-            index++;
-        }
-
-        string adjustedText = Text.Insert(0, "$");
-        spriteBatch.DrawString(font, adjustedText, _terminalPosition + new Vector2(10, 10 + (_spacing * index)) * EditorMain.ScaleModifier, Color.White);
-
-        float cursorSpeed = 60;
-        _cursorPosition.X = MathHelper.Lerp(_cursorPosition.X, _terminalPosition.X + (10 * EditorMain.ScaleModifier) + font.MeasureString(adjustedText.Substring(1, CharIndex)).X - (font.MeasureString("|") / 2).X + font.MeasureString("$").X, cursorSpeed * Time.DeltaTime);
-        _cursorPosition.Y = MathHelper.Lerp(_cursorPosition.Y, _terminalPosition.Y + (10 + _spacing * index) * EditorMain.ScaleModifier, cursorSpeed * Time.DeltaTime);
-
+        
+        Vector2 binBashPosition = _terminalPosition + new Vector2(0, _terminalHeight) * EditorMain.ScaleModifier - new Vector2(0, font.MeasureString("$").Y) * EditorMain.ScaleModifier + new Vector2(10, -12) * EditorMain.ScaleModifier;
+        spriteBatch.DrawString(font, "$", binBashPosition, Color.White);
+        
+        Vector2 textPosition = binBashPosition + new Vector2(font.MeasureString("$").X, 0) + new Vector2(2, 0) * EditorMain.ScaleModifier;
+        spriteBatch.DrawString(font, Text, textPosition, Color.White);
+        
+        int cursorSpeed = 50;
+        _cursorPosition.X = MathHelper.Lerp(_cursorPosition.X,
+                                            textPosition.X + font.MeasureString(Text.Substring(0, CharIndex)).X - font.MeasureString("|").X / 2,
+                                            cursorSpeed * Time.DeltaTime);
+                                            
+        _cursorPosition.Y = MathHelper.Lerp(_cursorPosition.Y,
+                                            textPosition.Y,
+                                            cursorSpeed * Time.DeltaTime);
+                                            
         spriteBatch.DrawString(font, "|", _cursorPosition, Color.White);
     }
 
     public static void HandleKeybinds()
     {
         if (Input.IsKeyDown(Keys.LeftControl) && Input.IsKeyPressed(Keys.Z))
+        {
+            Toggle();
+            InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
+        }
+        
+        if (Input.IsKeyDown(Keys.LeftControl) && Input.IsKeyDown(Keys.LeftShift))
+        {
+            if (Input.IsKeyPressed(Keys.P))
+            {
+                Toggle();
+                FileDialog.Open();
+                InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
+            }
+        }
+        
+        if (Input.IsKeyPressed(Keys.Escape))
         {
             Toggle();
             InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
