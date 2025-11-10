@@ -21,11 +21,11 @@ public static class Updater
         Input.SwitchStates();
     }
 
-    public static void Draw(SpriteBatch spriteBatch)
+    public static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
     {
         EditorMain.Draw(spriteBatch);
         FileDialog.Draw(spriteBatch);
-        Terminal.Draw(spriteBatch);
+        Terminal.Draw(spriteBatch, graphicsDevice);
         NotificationManager.Draw(spriteBatch);
     }
 }

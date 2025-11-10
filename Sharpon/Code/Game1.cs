@@ -62,7 +62,7 @@ public class Game1 : Game
         if (EditorMain.UnsavedChanges) _spriteBatch.DrawString(font, "Unsaved changes",
                                 new Vector2((Window.ClientBounds.Width - font.MeasureString(EditorMain.UnsavedChanges.ToString()).X - font.MeasureString(EditorMain.FilePath).X - 350), 20), Color.White);
 
-        Updater.Draw(_spriteBatch);
+        Updater.Draw(_spriteBatch, GraphicsDevice);
 
         _fps.frames++;
 

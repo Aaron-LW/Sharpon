@@ -21,6 +21,8 @@ public static class Terminal
     private static List<string> _lines = new List<string>();
     private static float _spacing = 20;
     private static Vector2 _cursorPosition;
+    private static float _scrollAmount;
+    private static float _scrollSpeed = 600;
 
     public static void Start(GameWindow gameWindow)
     {
@@ -29,7 +31,7 @@ public static class Terminal
         _terminalProcess.Start();
     }
     
-    public static void Draw(SpriteBatch spriteBatch)
+    public static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
     {
         Rectangle windowBounds = _gameWindow.ClientBounds;
         float terminalSpeed = 20;
@@ -51,14 +53,37 @@ public static class Terminal
                                                  windowBounds.Height - (windowBounds.Height - _terminalHeight * EditorMain.ScaleModifier)),
                                                  Color.Black);
 
-        spriteBatch.DrawLine(_terminalPosition, _terminalPosition + new Vector2(windowBounds.Width, 0), Color.LightBlue, 3);
+        int lineThickness = 3;
+        spriteBatch.DrawLine(_terminalPosition, _terminalPosition + new Vector2(windowBounds.Width, 0), Color.LightBlue, lineThickness);
         
         SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize * EditorMain.ScaleModifier);
         
-        Vector2 binBashPosition = _terminalPosition + new Vector2(0, _terminalHeight) * EditorMain.ScaleModifier - new Vector2(0, font.MeasureString("$").Y) * EditorMain.ScaleModifier + new Vector2(10, -12) * EditorMain.ScaleModifier;
-        spriteBatch.DrawString(font, "$", binBashPosition, Color.White);
-        
+        Vector2 binBashPosition = _terminalPosition + new Vector2(0, _terminalHeight) * EditorMain.ScaleModifier - new Vector2(0, font.MeasureString("$").Y) * EditorMain.ScaleModifier + new Vector2(10, -9) * EditorMain.ScaleModifier;
+        Vector2 linePosition = new Vector2(0, binBashPosition.Y - 5 * EditorMain.ScaleModifier);
         Vector2 textPosition = binBashPosition + new Vector2(font.MeasureString("$").X, 0) + new Vector2(2, 0) * EditorMain.ScaleModifier;
+
+        spriteBatch.End();
+        Rectangle terminalBounds = new Rectangle((int)_terminalPosition.X, (int)_terminalPosition.Y + lineThickness / 2, windowBounds.Width, (int)_terminalHeight);
+        RasterizerState rasterizerState = new RasterizerState() { ScissorTestEnable = true };
+        graphicsDevice.ScissorRectangle = terminalBounds;
+
+        spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, rasterizerState);
+
+        for (int i = 0; i < _lines.Count; i++)
+        {
+            Vector2 outputPosition = binBashPosition - new Vector2(0, 11) * EditorMain.ScaleModifier + new Vector2(0, _spacing * i) * EditorMain.ScaleModifier - new Vector2(0, _scrollAmount) * EditorMain.ScaleModifier;
+            spriteBatch.DrawString(font, _lines[i], outputPosition, Color.White);
+        }
+        
+        spriteBatch.FillRectangle(new RectangleF(linePosition.X,
+                                                 linePosition.Y,
+                                                 windowBounds.Width - linePosition.X,
+                                                 windowBounds.Height - linePosition.Y),
+                                                 new Color(10, 10, 10));
+                                                 
+        spriteBatch.DrawString(font, "$", binBashPosition, Color.White);
+        spriteBatch.DrawLine(linePosition, linePosition + new Vector2(windowBounds.Width, 0), Color.White);
+        
         spriteBatch.DrawString(font, Text, textPosition, Color.White);
         
         int cursorSpeed = 50;
@@ -69,8 +94,11 @@ public static class Terminal
         _cursorPosition.Y = MathHelper.Lerp(_cursorPosition.Y,
                                             textPosition.Y,
                                             cursorSpeed * Time.DeltaTime);
-                                            
+
         spriteBatch.DrawString(font, "|", _cursorPosition, Color.White);
+
+        spriteBatch.End();
+        spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
     }
 
     public static void HandleKeybinds()
@@ -95,6 +123,28 @@ public static class Terminal
         {
             Toggle();
             InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
+        }
+        
+        if (Input.IsKeyDown(Keys.Down))
+        {
+            _scrollAmount += _scrollSpeed * Time.DeltaTime;
+            if (_scrollAmount > _lines.Count * _spacing)
+            {
+                _scrollAmount = _lines.Count * _spacing;
+            }
+        }
+        
+        if (Input.IsKeyDown(Keys.Up))
+        {
+            if (_lines.Count >= 16)
+            {
+                _scrollAmount -= _scrollSpeed * Time.DeltaTime;
+                if (_scrollAmount < 310)
+                {
+                    _scrollAmount = 310;
+                }
+            
+            }
         }
     }
     
@@ -127,9 +177,7 @@ public static class Terminal
     
     public static void HandleEnter()
     {
-        Print(Text.Insert(0, "$"));
         _terminalProcess.SendCommand(Text);
-        
         SetText("");
         SetCharIndex(0);
     }
@@ -195,5 +243,6 @@ public static class Terminal
     public static void Print(string line)
     {
         _lines.Add(line);
+        _scrollAmount = _lines.Count * _spacing;
     }
 }
