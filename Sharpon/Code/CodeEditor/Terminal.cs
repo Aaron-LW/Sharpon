@@ -23,6 +23,8 @@ public static class Terminal
     private static Vector2 _cursorPosition;
     private static float _scrollAmount;
     private static float _scrollSpeed = 600;
+    private static List<string> _commandHistory = new List<string>();
+    private static int _commandHistoryIndex;
 
     public static void Start(GameWindow gameWindow)
     {
@@ -125,7 +127,7 @@ public static class Terminal
             InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
         }
         
-        if (Input.IsKeyDown(Keys.Down))
+        if (Input.IsKeyDown(Keys.Down) && Input.IsKeyDown(Keys.LeftControl))
         {
             _scrollAmount += _scrollSpeed * Time.DeltaTime;
             if (_scrollAmount > _lines.Count * _spacing)
@@ -134,7 +136,7 @@ public static class Terminal
             }
         }
         
-        if (Input.IsKeyDown(Keys.Up))
+        if (Input.IsKeyDown(Keys.Up) && Input.IsKeyDown(Keys.LeftControl))
         {
             if (_lines.Count >= 16)
             {
@@ -144,6 +146,28 @@ public static class Terminal
                     _scrollAmount = 310;
                 }
             
+            }
+        }
+        
+        if (Input.IsKeyPressed(Keys.Up) && _commandHistory.Count > 0)
+        {
+            if (_commandHistoryIndex != 0) _commandHistoryIndex--;
+            SetText(_commandHistory[_commandHistoryIndex]);
+            SetCharIndex(Text.Length);
+        }
+        
+        if (Input.IsKeyPressed(Keys.Down) && _commandHistoryIndex != _commandHistory.Count)
+        {
+            _commandHistoryIndex++;
+            if (_commandHistoryIndex == _commandHistory.Count) 
+            { 
+                SetText(""); 
+                SetCharIndex(0); 
+            }
+            else
+            {
+                SetText(_commandHistory[_commandHistoryIndex]);
+                SetCharIndex(Text.Length);
             }
         }
     }
@@ -178,6 +202,12 @@ public static class Terminal
     public static void HandleEnter()
     {
         _terminalProcess.SendCommand(Text);
+        if (Text != String.Empty && Text is not null)
+        {
+            _commandHistory.Add(Text);
+            _commandHistoryIndex = _commandHistory.Count;
+        }
+        
         SetText("");
         SetCharIndex(0);
     }
