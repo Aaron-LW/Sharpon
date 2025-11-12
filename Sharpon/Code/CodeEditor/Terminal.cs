@@ -182,14 +182,6 @@ public static class Terminal
         if (CharIndex == 0) return;
         if (Text.Length <= 0) return;
 
-        if (Input.IsKeyDown(Keys.LeftControl))
-        {
-            int nextIndex = EditorMain.NextControlLeftArrowIndex(CharIndex, Text);
-            SetText(Text.Remove(nextIndex, CharIndex - nextIndex));
-            SetCharIndex(nextIndex);
-            return;
-        }
-
         if (CharIndex != Text.Length)
         {
             if (Text[CharIndex] == ')')

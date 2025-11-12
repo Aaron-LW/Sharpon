@@ -246,7 +246,7 @@ public static class EditorMain
 
         if (Input.IsKeyDown(Keys.LeftControl))
         {
-            int nextIndex = NextControlLeftArrowIndex(CharIndex, Line);
+            int nextIndex = NextControlLeftArrowIndex();
             SetSelectedLine(Line.Remove(nextIndex, CharIndex - nextIndex));
             SetCharIndex(nextIndex);
             return;
@@ -395,7 +395,7 @@ public static class EditorMain
             {
                 if (Input.IsKeyDown(Keys.LeftControl))
                 {
-                    SetCharIndex(NextControlRightArrowIndex(CharIndex, Line));
+                    SetCharIndex(NextControlRightArrowIndex());
                 }
                 else
                 {
@@ -413,7 +413,7 @@ public static class EditorMain
             {
                 if (Input.IsKeyDown(Keys.LeftControl))
                 {
-                    SetCharIndex(NextControlLeftArrowIndex(CharIndex, Line));
+                    SetCharIndex(NextControlLeftArrowIndex());
                 }
                 else
                 {
@@ -548,7 +548,7 @@ public static class EditorMain
             //Left
             if (Input.IsKeyDown(Keys.J) && _keyTimer <= 0)
             {
-                AddToCharIndex(-1);
+                SetCharIndex(NextControlLeftArrowIndex());
                 
                 ResetKeyTimer();
                 _keyPressed = true;
@@ -557,7 +557,7 @@ public static class EditorMain
             //Right
             if (Input.IsKeyDown(Keys.L) && _keyTimer <= 0)
             {
-                AddToCharIndex(1);
+                SetCharIndex(NextControlRightArrowIndex());
                 
                 ResetKeyTimer();
                 _keyPressed = true;
@@ -626,49 +626,50 @@ public static class EditorMain
         }
     }
 
-    private static int NextControlRightArrowIndex(int startIndex, string line)
+    private static char[] _stopCharsRight = new char[] { ')', '}', ']', '.', ',', '/', ' '};
+    private static int NextControlRightArrowIndex()
     {
-        if (line[startIndex] == ' ')
+        if (CharIndex == LineLength) return LineLength;
+        
+        char selectedChar = Line[CharIndex];
+        for (int i = CharIndex; i < LineLength; i++)
         {
-            for (int i = startIndex; i < line.Length; i++)
+            if (!_stopCharsRight.Contains(Line[i]))
             {
-                if (line[i] != ' ') return i;
+                for (int j = i; j < LineLength; j++)
+                {
+                    if (_stopCharsRight.Contains(Line[j])) return j;
+                }
             }
         }
-        else
-        {
-            for (int i = startIndex + 1; i < line.Length; i++)
-            {
-                if (line[i] == ' ' || line[i] == '.' || line[i] == ',' || line[i] == ')') return i;
-            }
-        }
-
-        return line.Length;
+        
+        return LineLength;
     }
 
-    public static int NextControlLeftArrowIndex(int startIndex, string line)
+    private static char[] _stopCharsLeft = new char[] { '(', '.', ',', '[', '{', '/', ' '};
+    public static int NextControlLeftArrowIndex()
     {
-        startIndex--;
-
-        if (line[startIndex] == ' ')
+        if (CharIndex == 0) return 0;
+        
+        char previousChar = InputDistributor.PreviousChar;
+        
+        for (int i = CharIndex; i > 0; i--)
         {
-            //Search for letters
-            for (int i = startIndex - 1; i > 0; i--)
+            if (i - 1 <= 0) return 0;
+            
+            if (!_stopCharsLeft.Contains(Line[i - 1]))
             {
-                if (line[i] != ' ') return i + 1;
-                if (line[i] == '.' || line[i] == ',' || line[i] == '(') return i + 1;
+                for (int j = i; j > 0; j--)
+                {
+                    if (Line[j - 1] == 0) return 0;
+                    
+                    if (_stopCharsLeft.Contains(Line[j - 1]))
+                    {
+                        return j;
+                    }
+                }
             }
         }
-        else if (line[startIndex] != ' ')
-        {
-            //Search for spaces
-            for (int i = startIndex - 1; i > 0; i--)
-            {
-                if (line[i] == ' ') return i + 1;
-                if (line[i] == '.' || line[i] == ',' || line[i] == '(') return i + 1;
-            }
-        }
-
         return 0;
     }
     
