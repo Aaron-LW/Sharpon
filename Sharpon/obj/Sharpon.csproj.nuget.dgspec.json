@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/media/MonoGame/Sharpon/Sharpon/Sharpon.csproj": {}
+    "/home/katzi/MonoGame/Sharpon/Sharpon/Sharpon.csproj": {}
   },
   "projects": {
-    "/media/MonoGame/Sharpon/Sharpon/Sharpon.csproj": {
+    "/home/katzi/MonoGame/Sharpon/Sharpon/Sharpon.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/media/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
+        "projectUniqueName": "/home/katzi/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
         "projectName": "Sharpon",
-        "projectPath": "/media/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
+        "projectPath": "/home/katzi/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
         "packagesPath": "/home/katzi/.nuget/packages/",
-        "outputPath": "/media/MonoGame/Sharpon/Sharpon/obj/",
+        "outputPath": "/home/katzi/MonoGame/Sharpon/Sharpon/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/katzi/.nuget/NuGet/NuGet.Config"
@@ -20,7 +20,7 @@
           "net8.0"
         ],
         "sources": {
-          "/media/NuGetLocalFeed/": {},
+          "/home/katzi/NuGetLocalFeed": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -79,19 +79,11 @@
               "version": "[8.0.20, 8.0.20]"
             },
             {
-              "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
-              "version": "[8.0.20, 8.0.20]"
-            },
-            {
               "name": "Microsoft.NETCore.App.Host.linux-x64",
               "version": "[8.0.20, 8.0.20]"
             },
             {
               "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.20, 8.0.20]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Runtime.linux-x64",
               "version": "[8.0.20, 8.0.20]"
             }
           ],
@@ -101,11 +93,6 @@
             }
           },
           "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.110/PortableRuntimeIdentifierGraph.json"
-        }
-      },
-      "runtimes": {
-        "linux-x64": {
-          "#import": []
         }
       }
     }

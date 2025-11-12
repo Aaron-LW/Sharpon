@@ -35,6 +35,8 @@ public static class Terminal
     
     public static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
     {
+        //I hate this
+        
         Rectangle windowBounds = _gameWindow.ClientBounds;
         float terminalSpeed = 20;
         
@@ -70,7 +72,7 @@ public static class Terminal
         graphicsDevice.ScissorRectangle = terminalBounds;
 
         spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, rasterizerState);
-
+        
         for (int i = 0; i < _lines.Count; i++)
         {
             Vector2 outputPosition = binBashPosition - new Vector2(0, 11) * EditorMain.ScaleModifier + new Vector2(0, _spacing * i) * EditorMain.ScaleModifier - new Vector2(0, _scrollAmount) * EditorMain.ScaleModifier;
@@ -105,48 +107,51 @@ public static class Terminal
 
     public static void HandleKeybinds()
     {
-        if (Input.IsKeyDown(Keys.LeftControl) && Input.IsKeyPressed(Keys.Z))
+        if (Input.IsKeyDown(Keys.LeftControl))
         {
-            Toggle();
-            InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
-        }
-        
-        if (Input.IsKeyDown(Keys.LeftControl) && Input.IsKeyDown(Keys.LeftShift))
-        {
-            if (Input.IsKeyPressed(Keys.P))
+            if (Input.IsKeyPressed(Keys.Z))
             {
                 Toggle();
-                FileDialog.Open();
-                InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
+                InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
+            }
+            
+            if (Input.IsKeyDown(Keys.Down) || Input.IsKeyDown(Keys.K))
+            {
+                _scrollAmount += _scrollSpeed * Time.DeltaTime;
+                if (_scrollAmount > _lines.Count * _spacing)
+                {
+                    _scrollAmount = _lines.Count * _spacing;
+                }
+            }
+            
+            if (Input.IsKeyDown(Keys.Up) || Input.IsKeyDown(Keys.I))
+            {
+                if (_lines.Count >= 16)
+                {
+                    _scrollAmount -= _scrollSpeed * Time.DeltaTime;
+                    if (_scrollAmount < 310)
+                    {
+                        _scrollAmount = 310;
+                    }
+                }
+            }
+            
+            if (Input.IsKeyDown(Keys.LeftShift))
+            {
+                if (Input.IsKeyPressed(Keys.P))
+                {
+                    Toggle();
+                    FileDialog.Open();
+                    InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
+                }
             }
         }
+        
         
         if (Input.IsKeyPressed(Keys.Escape))
         {
             Toggle();
             InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
-        }
-        
-        if (Input.IsKeyDown(Keys.Down) && Input.IsKeyDown(Keys.LeftControl))
-        {
-            _scrollAmount += _scrollSpeed * Time.DeltaTime;
-            if (_scrollAmount > _lines.Count * _spacing)
-            {
-                _scrollAmount = _lines.Count * _spacing;
-            }
-        }
-        
-        if (Input.IsKeyDown(Keys.Up) && Input.IsKeyDown(Keys.LeftControl))
-        {
-            if (_lines.Count >= 16)
-            {
-                _scrollAmount -= _scrollSpeed * Time.DeltaTime;
-                if (_scrollAmount < 310)
-                {
-                    _scrollAmount = 310;
-                }
-            
-            }
         }
         
         if (Input.IsKeyPressed(Keys.Up) && _commandHistory.Count > 0)
@@ -201,6 +206,14 @@ public static class Terminal
     
     public static void HandleEnter()
     {
+        if (Text == "clear")
+        {
+            _lines.Clear();
+            SetText("");
+            SetCharIndex(0);
+            return;
+        }
+        
         _terminalProcess.SendCommand(Text);
         if (Text != String.Empty && Text is not null)
         {
