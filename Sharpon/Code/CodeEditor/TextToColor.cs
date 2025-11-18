@@ -1,0 +1,61 @@
+using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+
+public static class TextToColor
+{
+    public static Dictionary<string, Color> Lookup = new Dictionary<string, Color>()
+    {
+        { "private", Color.RoyalBlue },
+        { "public", Color.RoyalBlue },
+        { "protected", Color.RoyalBlue },
+        { "internal", Color.RoyalBlue },
+        { "get", Color.RoyalBlue },
+        { "set", Color.RoyalBlue },
+        { "static", Color.RoyalBlue },
+        { "const", Color.RoyalBlue },
+        { "readonly", Color.RoyalBlue },
+        { "volatile", Color.RoyalBlue },
+        { "unsafe", Color.RoyalBlue },
+        { "virtual", Color.RoyalBlue },
+        { "override", Color.RoyalBlue },
+        { "abstract", Color.RoyalBlue },
+        { "sealed", Color.RoyalBlue },
+        { "new", Color.RoyalBlue },
+        { "async", Color.RoyalBlue },
+        { "extern", Color.RoyalBlue },
+        { "partial", Color.RoyalBlue },
+        { "ref", Color.RoyalBlue },
+        { "in", Color.Purple },
+        { "is", Color.Purple },
+        { "out", Color.RoyalBlue },
+        { "params", Color.RoyalBlue },
+        { "byte", Color.RoyalBlue },
+        { "sbyte", Color.RoyalBlue },
+        { "short", Color.RoyalBlue },
+        { "ushort", Color.RoyalBlue },
+        { "int", Color.RoyalBlue },
+        { "uint", Color.RoyalBlue },
+        { "long", Color.RoyalBlue },
+        { "ulong", Color.RoyalBlue },
+        { "float", Color.RoyalBlue },
+        { "double", Color.RoyalBlue },
+        { "decimal", Color.RoyalBlue },
+        { "bool", Color.RoyalBlue },
+        { "char", Color.RoyalBlue },
+        { "nint", Color.RoyalBlue },
+        { "nuint", Color.RoyalBlue },
+        { "enum", Color.RoyalBlue },
+        { "class", Color.RoyalBlue },
+        { "string", Color.RoyalBlue },
+        { "object", Color.RoyalBlue },
+        { "void", Color.RoyalBlue },
+        { "true", Color.RoyalBlue },
+        { "false", Color.RoyalBlue },
+        { "return", Color.Purple },
+        { "using", Color.RoyalBlue },
+        { "Vector2", Color.SpringGreen },
+        { "Queue", Color.SpringGreen },
+        { "List", Color.SpringGreen }
+    };
+}
