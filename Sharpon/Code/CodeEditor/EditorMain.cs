@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
+using System.Text.RegularExpressions;
 
 public static class EditorMain
 {
@@ -69,6 +70,9 @@ public static class EditorMain
 
         for (int i = 0; i < Lines.Count; i++)
         {
+            float lineY = _codePosition.Y + (i * _lineSpacing);
+            if (lineY < -10 || lineY * ScaleModifier > _gameWindow.ClientBounds.Height) continue;
+            
             spriteBatch.DrawString(font, i.ToString(), 
                                    new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X / ScaleModifier - 15 * ScaleModifier, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, 
                                    Color.White);
@@ -88,7 +92,15 @@ public static class EditorMain
                                                          Color.White * 0.5f);
             }
             
-            spriteBatch.DrawString(font, Lines[i], new Vector2(_codePosition.X, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White);
+            //spriteBatch.DrawString(font, Lines[i], new Vector2(_codePosition.X, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White);
+            string[] words = Regex.Matches(Lines[i], @"\S+|\s+").Select(m => m.Value).ToArray();
+            
+            for (int j = 0; j < words.Length; j++)
+            {
+                string leadingString = string.Join("", words.Take(j));
+                
+                spriteBatch.DrawString(font, words[j], new Vector2(_codePosition.X + font.MeasureString(leadingString).X / ScaleModifier, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, color);
+            }
         }
         _cursorPosition = new Vector2(MathHelper.Lerp(_cursorPosition.X, _codePosition.X + font.MeasureString(Lines[LineIndex].Substring(0, CharIndex)).X / ScaleModifier - (font.MeasureString("|") / 2).X, 
                                                       cursorSpeed * Time.DeltaTime), 
