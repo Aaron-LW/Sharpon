@@ -47,6 +47,7 @@ public class Game1 : Game
         _fps.Update(gameTime);
         Updater.Update(gameTime);
         base.Update(gameTime);
+        Mouse.SetCursor(MouseCursor.No);
     }
 
     protected override void Draw(GameTime gameTime)
