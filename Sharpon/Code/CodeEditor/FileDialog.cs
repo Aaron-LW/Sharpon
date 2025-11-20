@@ -80,11 +80,13 @@ public static class FileDialog
 
     public static void Draw(SpriteBatch spriteBatch)
     {
+        //holy bad code
+        
         if (!IsOpened) return;
         SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize * EditorMain.ScaleModifier);
         Vector2 position = new Vector2(_gameWindow.ClientBounds.Width / 2.6f,
                                        100 * EditorMain.ScaleModifier);
-
+                                       
         float xWidth = 0;
         for (int i = 0; i < _filePaths.Length; i++)
         {

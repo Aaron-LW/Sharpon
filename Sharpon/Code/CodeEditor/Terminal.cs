@@ -22,9 +22,14 @@ public static class Terminal
     private static float _spacing = 20;
     private static Vector2 _cursorPosition;
     private static float _scrollAmount;
-    private static float _scrollSpeed = 600;
+    private static float _scrollSpeed = 10;
     private static List<string> _commandHistory = new List<string>();
     private static int _commandHistoryIndex;
+    private static float _linesHeight;
+    private static bool _keyPressed;
+    private static int _lineIndex = 0;
+    
+    private static float _keyTimer;
 
     public static void Start(GameWindow gameWindow)
     {
@@ -61,10 +66,11 @@ public static class Terminal
         spriteBatch.DrawLine(_terminalPosition, _terminalPosition + new Vector2(windowBounds.Width, 0), Color.LightBlue, lineThickness);
         
         SpriteFontBase font = EditorMain.FontSystem.GetFont(EditorMain.BaseFontSize * EditorMain.ScaleModifier);
+        _linesHeight = font.MeasureString(string.Join("\n", _lines)).Y;
         
         Vector2 binBashPosition = _terminalPosition + new Vector2(0, _terminalHeight) * EditorMain.ScaleModifier - new Vector2(0, font.MeasureString("$").Y) * EditorMain.ScaleModifier + new Vector2(10, -9) * EditorMain.ScaleModifier;
         Vector2 linePosition = new Vector2(0, binBashPosition.Y - 5 * EditorMain.ScaleModifier);
-        Vector2 textPosition = binBashPosition + new Vector2(font.MeasureString("$").X, 0) + new Vector2(2, 0) * EditorMain.ScaleModifier;
+        Vector2 textPosition = binBashPosition + new Vector2(font.MeasureString("$").X, 0) + new Vector2(3 * EditorMain.ScaleModifier, 0);
 
         spriteBatch.End();
         Rectangle terminalBounds = new Rectangle((int)_terminalPosition.X, (int)_terminalPosition.Y + lineThickness / 2, windowBounds.Width, (int)_terminalHeight);
@@ -75,7 +81,7 @@ public static class Terminal
         
         for (int i = 0; i < _lines.Count; i++)
         {
-            Vector2 outputPosition = binBashPosition - new Vector2(0, 11) * EditorMain.ScaleModifier + new Vector2(0, _spacing * i) * EditorMain.ScaleModifier - new Vector2(0, _scrollAmount) * EditorMain.ScaleModifier;
+            Vector2 outputPosition = _terminalPosition + new Vector2(7, 7) * EditorMain.ScaleModifier + new Vector2(0, _spacing * i) * EditorMain.ScaleModifier - new Vector2(0, _scrollAmount) * EditorMain.ScaleModifier;
             spriteBatch.DrawString(font, _lines[i], outputPosition, Color.White);
         }
         
@@ -107,6 +113,8 @@ public static class Terminal
 
     public static void HandleKeybinds()
     {
+        bool lKeyPressed = false;
+        
         if (Input.IsKeyDown(Keys.LeftControl))
         {
             if (Input.IsKeyPressed(Keys.Z))
@@ -117,22 +125,25 @@ public static class Terminal
             
             if (Input.IsKeyDown(Keys.Down) || Input.IsKeyDown(Keys.K))
             {
-                _scrollAmount += _scrollSpeed * Time.DeltaTime;
-                if (_scrollAmount > _lines.Count * _spacing)
+                lKeyPressed = true;
+                
+                if (_keyTimer <= 0)
                 {
-                    _scrollAmount = _lines.Count * _spacing;
+                    _lineIndex++;
+                    if (_lineIndex >= _lines.Count) _lineIndex = _lines.Count - 1;
+                    ResetKeyTimer();
                 }
             }
             
             if (Input.IsKeyDown(Keys.Up) || Input.IsKeyDown(Keys.I))
             {
-                if (_lines.Count >= 16)
+                lKeyPressed = true;
+                
+                if (_keyTimer <= 0) 
                 {
-                    _scrollAmount -= _scrollSpeed * Time.DeltaTime;
-                    if (_scrollAmount < 310)
-                    {
-                        _scrollAmount = 310;
-                    }
+                    _lineIndex--;
+                    if (_lineIndex < 0) _lineIndex = 0;
+                    ResetKeyTimer();
                 }
             }
             
@@ -147,34 +158,65 @@ public static class Terminal
             }
         }
         
-        
         if (Input.IsKeyPressed(Keys.Escape))
         {
             Toggle();
             InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
         }
         
-        if (Input.IsKeyPressed(Keys.Up) && _commandHistory.Count > 0)
+        
+        if (Input.IsKeyDown(Keys.Left))
         {
-            if (_commandHistoryIndex != 0) _commandHistoryIndex--;
-            SetText(_commandHistory[_commandHistoryIndex]);
-            SetCharIndex(Text.Length);
+            lKeyPressed = true;
+            
+            if (_keyTimer <= 0)
+            {
+                SetCharIndex(CharIndex - 1);
+                ResetKeyTimer();
+            }
         }
         
-        if (Input.IsKeyPressed(Keys.Down) && _commandHistoryIndex != _commandHistory.Count)
+        if (Input.IsKeyDown(Keys.Right))
         {
-            _commandHistoryIndex++;
-            if (_commandHistoryIndex == _commandHistory.Count) 
-            { 
-                SetText(""); 
-                SetCharIndex(0); 
-            }
-            else
+            lKeyPressed = true;
+            
+            if (_keyTimer <= 0)
             {
+                SetCharIndex(CharIndex + 1);
+                ResetKeyTimer();
+            }
+        }
+        
+        if (!Input.IsKeyDown(Keys.LeftControl))
+        {
+            if (Input.IsKeyPressed(Keys.Up) && _commandHistory.Count > 0)
+            {
+                if (_commandHistoryIndex != 0) _commandHistoryIndex--;
                 SetText(_commandHistory[_commandHistoryIndex]);
                 SetCharIndex(Text.Length);
             }
+        
+            if (Input.IsKeyPressed(Keys.Down) && _commandHistoryIndex != _commandHistory.Count)
+            {
+                _commandHistoryIndex++;
+                if (_commandHistoryIndex == _commandHistory.Count) 
+                { 
+                    SetText(""); 
+                    SetCharIndex(0); 
+                }
+                else
+                {
+                    SetText(_commandHistory[_commandHistoryIndex]);
+                    SetCharIndex(Text.Length);
+                }
+            }
         }
+        
+        _scrollAmount = MathHelper.Lerp(_scrollAmount, _spacing * _lineIndex + 12, _scrollSpeed * Time.DeltaTime);
+        if (_scrollAmount > GetMaxScrollAmount()) _scrollAmount = GetMaxScrollAmount();
+        
+        _keyPressed = lKeyPressed;
+        _keyTimer -= Time.DeltaTime;
     }
     
     public static void HandleBackspace()
@@ -190,6 +232,14 @@ public static class Terminal
                 AddToCharIndex(-1);
                 return;
             }
+        }
+        
+        if (Input.IsKeyDown(Keys.LeftControl))
+        {
+            int nextIndex = EditorMain.NextControlLeftArrowIndex(Text, CharIndex);
+            SetText(Text.Remove(nextIndex, CharIndex - nextIndex));
+            SetCharIndex(CharIndex - (CharIndex - nextIndex));
+            return;
         }
 
         SetText(Text.Remove(CharIndex - 1, 1));
@@ -278,6 +328,23 @@ public static class Terminal
     public static void Print(string line)
     {
         _lines.Add(line);
-        _scrollAmount = _lines.Count * _spacing;
+        _lineIndex = _lines.Count - (int)(_terminalHeight / _spacing) + 1;
+    }
+    
+    private static float GetMaxScrollAmount()
+    {
+        return (_lines.Count * _spacing) - _terminalHeight + _spacing * 2;
+    }
+    
+    private static void ResetKeyTimer()
+    {
+        if (_keyPressed)
+        {
+            _keyTimer = 0.04f;
+        }
+        else
+        {
+            _keyTimer = 0.13f;
+        }
     }
 }

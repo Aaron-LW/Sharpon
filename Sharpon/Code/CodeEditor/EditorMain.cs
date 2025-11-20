@@ -93,7 +93,7 @@ public static class EditorMain
             }
             
             //spriteBatch.DrawString(font, Lines[i], new Vector2(_codePosition.X, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White);
-            string[] words = Regex.Matches(Lines[i], @"\s+|'[^']*'|""[^""]*""|[^\w\s]|[\p{L}\p{N}]+").Select(m => m.Value).ToArray();
+            string[] words = Regex.Matches(Lines[i], @"\s+|'[^']*'|""[^""]*""|[^\w\s]|[\p{L}\p{N}_]+").Select(m => m.Value).ToArray();
             
             for (int j = 0; j < words.Length; j++)
             {
@@ -672,23 +672,24 @@ public static class EditorMain
     }
 
     private static char[] _stopCharsLeft = new char[] { '(', '.', ',', '[', '{', '/', ' '};
-    public static int NextControlLeftArrowIndex()
+    public static int NextControlLeftArrowIndex(string line = null, int charIndex = -1)
     {
-        if (CharIndex == 0) return 0;
+        if (line == null) line = Line;
+        if (charIndex == -1) charIndex = CharIndex;
         
-        char previousChar = InputDistributor.PreviousChar;
+        if (charIndex == 0) return 0;
         
-        for (int i = CharIndex; i > 0; i--)
+        for (int i = charIndex; i > 0; i--)
         {
             if (i - 1 <= 0) return 0;
             
-            if (!_stopCharsLeft.Contains(Line[i - 1]))
+            if (!_stopCharsLeft.Contains(line[i - 1]))
             {
                 for (int j = i; j > 0; j--)
                 {
-                    if (Line[j - 1] == 0) return 0;
+                    if (line[j - 1] == 0) return 0;
                     
-                    if (_stopCharsLeft.Contains(Line[j - 1]))
+                    if (_stopCharsLeft.Contains(line[j - 1]))
                     {
                         return j;
                     }
