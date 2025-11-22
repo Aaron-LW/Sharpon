@@ -7,7 +7,8 @@ public static class InputDistributor
     {
         Editor,
         FileDialog,
-        Terminal
+        Terminal,
+        Finder
     }
 
     public static string SelectedLine => GetSelectedLine();
@@ -34,6 +35,10 @@ public static class InputDistributor
             case InputReceiver.Terminal:
                 Terminal.SetText(line);
                 return;
+                
+            case InputReceiver.Finder:
+                Finder.SetText(line);
+                return;
         }
 
         throw new NotImplementedException($"Couldn't set selected line of {_inputReceiver}; Wasn't set up for SetSelectedLine");
@@ -51,6 +56,9 @@ public static class InputDistributor
                 
             case InputReceiver.Terminal:
                 return Terminal.Text;
+            
+            case InputReceiver.Finder:
+                return Finder.Text;
         }
 
         throw new NotImplementedException($"Couldn't get selected line of {_inputReceiver}; Wasn't set up for GetSelectedLine");
@@ -70,6 +78,9 @@ public static class InputDistributor
                
             case InputReceiver.Terminal:
                 return;
+                
+            case InputReceiver.Finder:
+                return;
         }
 
         throw new NotImplementedException($"Couldn't remove selected line of {_inputReceiver}; Wasn't set up for RemoveSelectedLine");
@@ -86,6 +97,9 @@ public static class InputDistributor
                 return 0;
                 
             case InputReceiver.Terminal:
+                return 0;
+                
+            case InputReceiver.Finder:
                 return 0;
         }
 
@@ -104,6 +118,9 @@ public static class InputDistributor
                 return;
                 
             case InputReceiver.Terminal:
+                return;
+                
+            case InputReceiver.Finder:
                 return;
         }
 
@@ -124,6 +141,10 @@ public static class InputDistributor
                 
             case InputReceiver.Terminal:
                 return;
+                
+            case InputReceiver.Finder:
+                Finder.SetCharIndex(charIndex);
+                return;
         }
 
         throw new NotImplementedException($"Couldn't set character index of {_inputReceiver}; Wasn't set up for SetCharIndex()");
@@ -141,6 +162,9 @@ public static class InputDistributor
                 
             case InputReceiver.Terminal:
                 return Terminal.CharIndex;
+                
+            case InputReceiver.Finder:
+                return Finder.CharIndex;
         }
 
         throw new NotImplementedException($"Couldn't get character index of {_inputReceiver}; Wasn't set up for GetCharIndex()");
@@ -160,6 +184,10 @@ public static class InputDistributor
                 
             case InputReceiver.Terminal:
                 Terminal.AddToCharIndex(amount);
+                return;
+                
+            case InputReceiver.Finder:
+                Finder.AddToCharIndex(amount);
                 return;
         }
 
@@ -203,6 +231,10 @@ public static class InputDistributor
             case InputReceiver.Terminal:
                 Terminal.HandleBackspace();
                 return;
+                
+            case InputReceiver.Finder:
+                Finder.HandleBackspace();
+                return;
         }
 
         throw new NotImplementedException($"Couldn't handle backspace of {_inputReceiver}; Wasn't set up for HandleBackspace()");
@@ -223,6 +255,9 @@ public static class InputDistributor
             case InputReceiver.Terminal:
                 Terminal.HandleEnter();
                 return;
+                
+            case InputReceiver.Finder:
+                return;
         }
 
         throw new NotImplementedException($"Couldn't handle enter of {_inputReceiver}; Wasn't set up for HandleEnter()");
@@ -241,6 +276,9 @@ public static class InputDistributor
                 return;
                 
             case InputReceiver.Terminal:
+                return;
+                
+            case InputReceiver.Finder:
                 return;
         }
 
@@ -262,6 +300,10 @@ public static class InputDistributor
             case InputReceiver.Terminal:
                 Terminal.HandleKeybinds();
                 return;
+                
+            case InputReceiver.Finder:
+                Finder.HandleKeybinds();
+                return;
         }
         
         throw new NotImplementedException($"Couldn't handle keybinds of {_inputReceiver}; Wasn't set up for HandleKeybinds()");
@@ -271,5 +313,10 @@ public static class InputDistributor
     {
         if (inputReceiver == InputReceiver.FileDialog && !FileDialog.IsOpened) throw new Exception("Tried to set FileDialog as InputReceiver but FileDialog wasn't opened"); 
         _inputReceiver = inputReceiver;
+    }
+    
+    public static InputReceiver SelectedInputReceiver()
+    {
+        return _inputReceiver;
     }
 }

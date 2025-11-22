@@ -1,4 +1,4 @@
-using System;
+using System;    
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -233,6 +233,15 @@ public static class FileDialog
 
     public static void HandleEnter()
     {
+        if (Input.IsKeyDown(Keys.LeftControl))
+        {
+            if (!File.Exists(Text))
+            {
+                File.Create(Text);
+                NotificationManager.CreateNotification($"Created new file at: {Text}", 5);
+            }
+        }
+        
         InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
         IsOpened = false;
         CharIndex = 0;
@@ -287,7 +296,7 @@ public static class FileDialog
         
         if (Input.IsKeyDown(Keys.LeftControl))
         {
-            if (Input.IsKeyPressed(Keys.Z))
+            if (Input.IsKeyPressed(Keys.T))
             {
                 Close();
                 Terminal.Toggle();

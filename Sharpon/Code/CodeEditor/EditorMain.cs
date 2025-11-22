@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using System.Text.RegularExpressions;
+using MonoGame.Extended.Graphics;
 
 public static class EditorMain
 {
@@ -90,6 +91,22 @@ public static class EditorMain
                                                          new SizeF(font.MeasureString(i.ToString()).X,
                                                          font.MeasureString(i.ToString()).Y)),
                                                          Color.White * 0.5f);
+            }
+            
+            TextBlock[] foundBlocks = Finder.Find(Lines[i]);
+            if (foundBlocks.Length != 0)
+            {
+                foreach (TextBlock block in foundBlocks)
+                {
+                    Vector2 startPosition = new Vector2(_codePosition.X + font.MeasureString(Lines[i].Substring(0, block.Start)).X / ScaleModifier, lineY);
+                    Vector2 endPosition = new Vector2(_codePosition.X + font.MeasureString(Lines[i].Substring(0, block.End)).X / ScaleModifier, lineY + font.MeasureString(Lines[i].Substring(0, block.End)).Y);
+                    
+                    spriteBatch.FillRectangle(new RectangleF(startPosition.X * ScaleModifier,
+                                                             startPosition.Y * ScaleModifier,
+                                                             MathF.Abs(endPosition.X - startPosition.X) * ScaleModifier,
+                                                             MathF.Abs(endPosition.Y - startPosition.Y) * ScaleModifier),
+                                                             new Color(84, 8, 99));
+                }
             }
             
             //spriteBatch.DrawString(font, Lines[i], new Vector2(_codePosition.X, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White);
@@ -544,10 +561,25 @@ public static class EditorMain
                 SetCharIndex(LineLength);
             }
             
-            if (Input.IsKeyPressed(Keys.Z))
+            if (Input.IsKeyPressed(Keys.T))
             {
                 Terminal.Toggle();
                 InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Terminal);
+            }
+            
+            if (Input.IsKeyPressed(Keys.F))
+            {
+                if (!Finder.IsOpened) Finder.Open();
+                
+                if (Input.IsKeyDown(Keys.LeftShift))
+                {
+                    Finder.SetText("");
+                    Finder.Close();
+                }
+                else
+                {
+                    InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Finder);
+                }
             }
             
             //Up

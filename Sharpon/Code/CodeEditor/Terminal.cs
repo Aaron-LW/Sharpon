@@ -117,7 +117,7 @@ public static class Terminal
         
         if (Input.IsKeyDown(Keys.LeftControl))
         {
-            if (Input.IsKeyPressed(Keys.Z))
+            if (Input.IsKeyPressed(Keys.T))
             {
                 Toggle();
                 InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
