@@ -74,6 +74,8 @@ public class Game1 : Game
     protected override void OnExiting(object sender, ExitingEventArgs args)
     {
         base.OnExiting(sender, args);
+        
+        PlayTimeCounter.SavePlayTime();
         Terminal.Stop();
     }
 }

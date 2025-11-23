@@ -407,7 +407,7 @@ public static class EditorMain
             if (insert[0] == '}' && InputDistributor.PreviousChar == '{')
             {
                 HandleBackspace();
-                if (Line.Length > 0) SetSelectedLine(Line.Remove(Line.Length - insert.Length));
+                if (Line.Length > 0 && InputDistributor.PreviousChar == ' ') SetSelectedLine(Line.Remove(Line.Length - insert.Length));
                 Lines.Insert(LineIndex + 1, spacesString + '{');
                 Lines.Insert(LineIndex + 2, spacesString);
                 Lines.Insert(LineIndex + 3, spacesString + insert);
@@ -620,6 +620,24 @@ public static class EditorMain
                 _keyPressed = true;
             }
             
+            //RightLess
+            if (Input.IsKeyDown(Keys.E) && _keyTimer <= 0)
+            {
+                AddToCharIndex(1);
+                
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
+            
+            //LeftLess
+            if (Input.IsKeyDown(Keys.Q) && _keyTimer <= 0)
+            {
+                AddToCharIndex(-1);
+                
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
+            
             //ResetKeyTimer();
             //_keyPressed = true;
         }
@@ -632,7 +650,9 @@ public static class EditorMain
             !Input.IsKeyDown(Keys.I) &&
             !Input.IsKeyDown(Keys.K) &&
             !Input.IsKeyDown(Keys.J) &&
-            !Input.IsKeyDown(Keys.L))
+            !Input.IsKeyDown(Keys.L) &&
+            !Input.IsKeyDown(Keys.Q) &&
+            !Input.IsKeyDown(Keys.E))
         {
             _keyPressed = false;
             _keyTimer = 0;

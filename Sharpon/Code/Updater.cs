@@ -10,6 +10,7 @@ public static class Updater
         NotificationManager.Start(gameWindow);
         Terminal.Start(gameWindow);
         Finder.Start(gameWindow);
+        PlayTimeCounter.Start(gameWindow);
     }
 
     public static void Update(GameTime gameTime)
@@ -19,6 +20,7 @@ public static class Updater
         InputHandler.Update();
         FileDialog.Update();
         NotificationManager.Update();
+        PlayTimeCounter.Update();
         Input.SwitchStates();
     }
 
@@ -29,5 +31,6 @@ public static class Updater
         Terminal.Draw(spriteBatch, graphicsDevice);
         NotificationManager.Draw(spriteBatch);
         Finder.Draw(spriteBatch);
+        PlayTimeCounter.Draw(spriteBatch);
     }
 }

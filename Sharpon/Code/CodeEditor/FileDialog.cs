@@ -237,7 +237,7 @@ public static class FileDialog
         {
             if (!File.Exists(Text))
             {
-                File.Create(Text);
+                using (var fileStream = File.Create(Text)) {}
                 NotificationManager.CreateNotification($"Created new file at: {Text}", 5);
             }
         }
@@ -377,9 +377,8 @@ public static class FileDialog
 
     public static string TryGetSolutionDirectoryInfo(string currentPath = null)
     {
-        var directory = new DirectoryInfo(
-            currentPath ?? Directory.GetCurrentDirectory());
-        while (directory != null && !directory.GetFiles("*.sln").Any())
+        var directory = new DirectoryInfo(currentPath ?? Directory.GetCurrentDirectory());
+        while (directory != null && !directory.GetFiles("*.csproj").Any())
         {
             directory = directory.Parent;
         }

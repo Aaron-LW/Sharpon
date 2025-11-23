@@ -105,6 +105,24 @@ public static class Finder
     {
         if (CharIndex == 0) return;
         
+        if (CharIndex != Text.Length)
+        {
+            if (Text[CharIndex] == ')')
+            {
+                SetText(Text.Remove(CharIndex - 1, 2));
+                AddToCharIndex(-1);
+                return;
+            }
+        }
+        
+        if (Input.IsKeyDown(Keys.LeftControl))
+        {
+            int nextIndex = EditorMain.NextControlLeftArrowIndex(Text, CharIndex);
+            SetText(Text.Remove(nextIndex, CharIndex - nextIndex));
+            SetCharIndex(CharIndex - (CharIndex - nextIndex));
+            return;
+        }
+        
         SetText(Text.Remove(CharIndex - 1, 1));
         AddToCharIndex(-1);
     }
@@ -114,6 +132,7 @@ public static class Finder
         if (Input.IsKeyPressed(Keys.Escape) || Input.IsKeyPressed(Keys.F) && Input.IsKeyDown(Keys.LeftControl))
         {
             InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
+            if (Text == "") Close();
             
             if (Input.IsKeyDown(Keys.LeftShift))
             {
