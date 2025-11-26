@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "s90O10dbqPg=",
+  "dgSpecHash": "1A/KVEG0loY=",
   "success": true,
-  "projectFilePath": "/media/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
+  "projectFilePath": "/home/katzi/MonoGame/Sharpon/Sharpon/Sharpon.csproj",
   "expectedPackageFiles": [
     "/home/katzi/.nuget/packages/cyotek.drawing.bitmapfont/2.0.4/cyotek.drawing.bitmapfont.2.0.4.nupkg.sha512",
     "/home/katzi/.nuget/packages/fontstashsharp.base/1.2.0/fontstashsharp.base.1.2.0.nupkg.sha512",

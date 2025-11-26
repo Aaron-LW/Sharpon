@@ -25,6 +25,7 @@ public static class InputDistributor
         switch (_inputReceiver)
         {
             case InputReceiver.Editor:
+                if (EditorMain.EditorMode == EditorMode.Moving) return;
                 EditorMain.SetSelectedLine(line);
                 return;
 
@@ -175,6 +176,7 @@ public static class InputDistributor
         switch (_inputReceiver)
         {
             case InputReceiver.Editor:
+                if (EditorMain.EditorMode == EditorMode.Moving) return;
                 EditorMain.AddToCharIndex(amount);
                 return;
 

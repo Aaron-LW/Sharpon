@@ -35,6 +35,7 @@ public static class EditorMain
     private static float _baseFastKeyTimer = 0.04f;
     private static float _baseVeryFastKeyTimer = 0.015f;
 
+    public static EditorMode EditorMode { get; private set; } = EditorMode.Editing;
     public static FontSystem FontSystem = new FontSystem();
     public static List<string> Lines = new List<string>() { "" };
     public static int LineIndex { get; private set; }
@@ -74,8 +75,9 @@ public static class EditorMain
             float lineY = _codePosition.Y + (i * _lineSpacing);
             if (lineY < -10 || lineY * ScaleModifier > _gameWindow.ClientBounds.Height) continue;
             
-            spriteBatch.DrawString(font, i.ToString(), 
-                                   new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X / ScaleModifier - 15 * ScaleModifier, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, 
+            int lineCount = i + 1;
+            spriteBatch.DrawString(font, lineCount.ToString(), 
+                                   new Vector2(_codePosition.X - font.MeasureString(lineCount.ToString()).X / ScaleModifier - 15 * ScaleModifier, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, 
                                    Color.White);
             
             
@@ -136,7 +138,8 @@ public static class EditorMain
                                                       cursorSpeed * Time.DeltaTime), 
                                                       MathHelper.Lerp(_cursorPosition.Y, _codePosition.Y + (LineIndex * _lineSpacing), cursorSpeed * Time.DeltaTime));
                                                       
-        spriteBatch.DrawString(font, "|", _cursorPosition * ScaleModifier, Color.White);
+        Color cursorColor = EditorMode == EditorMode.Editing ? Color.White : Color.Orange;
+        spriteBatch.DrawString(font, "|", _cursorPosition * ScaleModifier, cursorColor);
 
         //spriteBatch.DrawString(font, $"Lines: {Lines.Count}", new Vector2(150, 20) * ScaleModifier, Color.White);
         //spriteBatch.DrawString(font, $"Current Line: {LineIndex}", new Vector2(250, 20) * ScaleModifier, Color.White);
@@ -265,6 +268,8 @@ public static class EditorMain
 
     public static void HandleBackspace()
     {
+        if (EditorMode == EditorMode.Moving) EditorMode = EditorMode.Editing;
+        
         if (CharIndex == 0)
         {
             if (LineIndex != 0)
@@ -313,6 +318,8 @@ public static class EditorMain
 
     public static void HandleTab()
     {
+        if (EditorMode == EditorMode.Moving) EditorMode = EditorMode.Editing;
+        
         if (Input.IsKeyDown(Keys.LeftShift))
         {
             if (CharIndex != 0)
@@ -370,6 +377,8 @@ public static class EditorMain
 
     public static void HandleEnter()
     {
+        if (EditorMode == EditorMode.Moving) EditorMode = EditorMode.Editing;
+        
         bool tab = false;
         string insert = Line.Substring(CharIndex, LineLength - CharIndex);
         if (CharIndex != 0)
@@ -431,6 +440,18 @@ public static class EditorMain
 
     public static void HandleKeybinds()
     {
+        if (Input.IsKeyPressed(Keys.RightShift))
+        {
+            if (EditorMode == EditorMode.Editing)
+            {
+                EditorMode = EditorMode.Moving;
+            }
+            else
+            {
+                EditorMode = EditorMode.Editing;
+            }
+        }
+        
         if (Input.IsKeyDown(Keys.Right) && _keyTimer <= 0)
         {
             if (CharIndex != LineLength)
@@ -551,16 +572,6 @@ public static class EditorMain
                 //BaseFontSize = Math.Clamp(BaseFontSize - 3, 1, 9999999);
             }
             
-            if (Input.IsKeyPressed(Keys.A))
-            {
-                SetCharIndex(GetFirstNonSpaceCharacterIndex());
-            }
-
-            if (Input.IsKeyPressed(Keys.D))
-            {
-                SetCharIndex(LineLength);
-            }
-            
             if (Input.IsKeyPressed(Keys.T))
             {
                 Terminal.Toggle();
@@ -582,64 +593,18 @@ public static class EditorMain
                 }
             }
             
-            //Up
-            if (Input.IsKeyDown(Keys.I) && _keyTimer <= 0)
-            {
-                AddToLineIndex(-1);
-                SetCharIndex(LineLength);
-                
-                ResetKeyTimer();
-                _keyPressed = true;
-            }
-            
-            //Down
-            if (Input.IsKeyDown(Keys.K) && _keyTimer <= 0)
-            {
-                AddToLineIndex(1);
-                SetCharIndex(LineLength);
-                
-                ResetKeyTimer();
-                _keyPressed = true;
-            }
-            
-            //Left
-            if (Input.IsKeyDown(Keys.J) && _keyTimer <= 0)
-            {
-                SetCharIndex(NextControlLeftArrowIndex());
-                
-                ResetKeyTimer();
-                _keyPressed = true;
-            }
-            
-            //Right
-            if (Input.IsKeyDown(Keys.L) && _keyTimer <= 0)
-            {
-                SetCharIndex(NextControlRightArrowIndex());
-                
-                ResetKeyTimer();
-                _keyPressed = true;
-            }
-            
-            //RightLess
-            if (Input.IsKeyDown(Keys.E) && _keyTimer <= 0)
-            {
-                AddToCharIndex(1);
-                
-                ResetKeyTimer();
-                _keyPressed = true;
-            }
-            
-            //LeftLess
-            if (Input.IsKeyDown(Keys.Q) && _keyTimer <= 0)
-            {
-                AddToCharIndex(-1);
-                
-                ResetKeyTimer();
-                _keyPressed = true;
-            }
             
             //ResetKeyTimer();
             //_keyPressed = true;
+        }
+
+        if (EditorMode == EditorMode.Moving)
+        {
+            HandleKeybindsMoving();
+        }
+        else
+        {
+            HandleKeybindsEditing();
         }
 
         if (!Input.IsKeyDown(Keys.Up) &&
@@ -652,7 +617,11 @@ public static class EditorMain
             !Input.IsKeyDown(Keys.J) &&
             !Input.IsKeyDown(Keys.L) &&
             !Input.IsKeyDown(Keys.Q) &&
-            !Input.IsKeyDown(Keys.E))
+            !Input.IsKeyDown(Keys.E) &&
+            !Input.IsKeyDown(Keys.W) &&
+            !Input.IsKeyDown(Keys.S) &&
+            !Input.IsKeyDown(Keys.A) &&
+            !Input.IsKeyDown(Keys.D))
         {
             _keyPressed = false;
             _keyTimer = 0;
@@ -675,6 +644,100 @@ public static class EditorMain
         {
             _codePosition.Y = _codeMaxY;
         }
+    }
+    
+    private static void HandleKeybindsMoving()
+    {
+        if (Input.IsKeyDown(Keys.A) && _keyTimer <= 0)
+        {
+            AddToCharIndex(-1);
+            
+            ResetKeyTimer();
+            _keyPressed = true;
+        }
+
+        if (Input.IsKeyDown(Keys.D) && _keyTimer <= 0)
+        {
+            AddToCharIndex(1);
+            
+            ResetKeyTimer();
+            _keyPressed = true;
+        }
+        
+        if (Input.IsKeyDown(Keys.W) && _keyTimer <= 0)
+        {
+            AddToLineIndex(-1);
+            SetCharIndex(LineLength);
+            
+            ResetKeyTimer(true);
+            _keyPressed = true;
+        }
+        
+        if (Input.IsKeyDown(Keys.S) && _keyTimer <= 0)
+        {
+            AddToLineIndex(1);
+            SetCharIndex(LineLength);
+            
+            ResetKeyTimer(true);
+            _keyPressed = true;
+        }
+
+        //Up
+        if (Input.IsKeyDown(Keys.I) && _keyTimer <= 0)
+        {
+            AddToLineIndex(-1);
+            SetCharIndex(LineLength);
+            
+            ResetKeyTimer();
+            _keyPressed = true;
+        }
+        
+        //Down
+        if (Input.IsKeyDown(Keys.K) && _keyTimer <= 0)
+        {
+            AddToLineIndex(1);
+            SetCharIndex(LineLength);
+            
+            ResetKeyTimer();
+            _keyPressed = true;
+        }
+        
+        //Left
+        if (Input.IsKeyDown(Keys.J) && _keyTimer <= 0)
+        {
+            if (CharIndex != 0)
+            {
+                Console.WriteLine(NextControlLeftArrowIndex());
+                SetCharIndex(NextControlLeftArrowIndex());
+            }
+            
+            ResetKeyTimer();
+            _keyPressed = true;
+        }
+        
+        //Right
+        if (Input.IsKeyDown(Keys.L) && _keyTimer <= 0)
+        {
+            SetCharIndex(NextControlRightArrowIndex());
+            
+            ResetKeyTimer();
+            _keyPressed = true;
+        }
+
+        if (Input.IsKeyPressed(Keys.E))
+        {
+            SetCharIndex(LineLength);
+        }
+        
+        if (Input.IsKeyPressed(Keys.Q))
+        {
+            SetCharIndex(GetFirstNonSpaceCharacterIndex());
+        }
+    }
+    
+    private static void HandleKeybindsEditing()
+    {
+        
     }
     
     private static void ResetKeyTimer(bool fast = false)
