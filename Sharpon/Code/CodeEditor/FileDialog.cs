@@ -1,4 +1,4 @@
-using System;    
+using System;     
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -302,6 +302,30 @@ public static class FileDialog
                 Terminal.Toggle();
                 InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Terminal);
             }
+            
+            if (Input.IsKeyDown(Keys.K) && _keyTimer <= 0)
+            {
+                LineIndex++;
+                if (LineIndex > _filePaths.Length - 1)
+                {
+                    LineIndex--;
+                }
+                
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
+            
+            if (Input.IsKeyDown(Keys.I) && _keyTimer <= 0)
+            {
+                LineIndex--;
+                if (LineIndex <= 0)
+                {
+                    LineIndex = 0;
+                }
+               
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
         }
         
         if (Input.IsKeyPressed(Keys.Escape))
@@ -314,7 +338,9 @@ public static class FileDialog
             !Input.IsKeyDown(Keys.Left) &&
             !Input.IsKeyDown(Keys.Up) &&
             !Input.IsKeyDown(Keys.Down) &&
-            !Input.IsKeyDown(Keys.X))
+            !Input.IsKeyDown(Keys.X) &&
+            !Input.IsKeyDown(Keys.K) &&
+            !Input.IsKeyDown(Keys.I))
         {
             _keyPressed = false;
             _keyTimer = 0;
