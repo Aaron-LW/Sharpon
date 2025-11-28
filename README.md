@@ -7,6 +7,7 @@ Sharpon also doesnt support mouse input so its keyboard only
 - Download the right version for your operating system from the releases page
 - Unzip the file and find the Sharpon.exe in the publish directory (or just Sharpon if you're on linux)
 - Windows defender will tell you that this is a virus but its probably not
+<br>
 
 ## Keybinds
 `Ctrl+Shift+P` Open file selector <br>
@@ -29,3 +30,12 @@ Sharpon also doesnt support mouse input so its keyboard only
 `Q/E` to go one character to the left/right <br>
 `W/E` to go up/down quickly <br>
 You cant type in moving mode
+<br>
+
+## Roadmap
+*things I wanna add that are currently not in Sharpon* <br>
+- Copy and paste
+- Selecting
+- Code completion
+- actual not hardcoded syntax highlighting
+- Error highlighting (idk what its called)
