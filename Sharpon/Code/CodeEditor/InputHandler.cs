@@ -28,6 +28,14 @@ public static class InputHandler
         string pressedKeys = stringBuilder.ToString();
         _charQueue.Clear();
         
+        if (Input.IsKeyDown(Keys.LeftControl))
+        {
+            if (Input.IsKeyPressed(Keys.M))
+            {
+                Updater.KeybindsMenu = !Updater.KeybindsMenu;
+            }
+        }
+        
         InputDistributor.HandleKeybinds();
         if (Input.IsKeyDown(Keys.LeftControl)) return;
         
@@ -82,6 +90,7 @@ public static class InputHandler
             if (c == '\b') InputDistributor.HandleBackspace();
             else if (c == '\r' || c == '\n') InputDistributor.HandleEnter();
             else if (c == '\t') InputDistributor.HandleTab();
+            else return;
             return;
         }
         else

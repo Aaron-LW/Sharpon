@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 
 public static class Updater
 {
+    public static bool KeybindsMenu = false;
+    
     public static void Start(GameWindow gameWindow)
     {
         EditorMain.Start(gameWindow);
@@ -26,7 +28,8 @@ public static class Updater
 
     public static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
     {
-        EditorMain.Draw(spriteBatch);
+        if (!KeybindsMenu) EditorMain.Draw(spriteBatch);
+        else KeybindScreen.Draw(spriteBatch);
         FileDialog.Draw(spriteBatch);
         Terminal.Draw(spriteBatch, graphicsDevice);
         NotificationManager.Draw(spriteBatch);

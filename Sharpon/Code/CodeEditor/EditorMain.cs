@@ -28,6 +28,7 @@ public static class EditorMain
     private static Vector2 _cursorPosition;
     private static float _textOpacity = 1;
     private static Vector2 _lineBlockPosition;
+    private static bool _modeSwitchPressed;
 
     private static float _keyTimer = 0;
     private static bool _keyPressed = false;
@@ -197,6 +198,11 @@ public static class EditorMain
         }
 
         return lineIndex;
+    }
+    
+    public static void SetFilePath(string path)
+    {
+        FilePath = path;
     }
 
     public static void SetSelectedLine(string line)
@@ -440,16 +446,30 @@ public static class EditorMain
 
     public static void HandleKeybinds()
     {
-        if (Input.IsKeyPressed(Keys.Escape) || Input.IsKeyPressed(Keys.CapsLock))
+        if (Input.IsKeyDown(Keys.Escape) || Input.IsKeyDown(Keys.CapsLock))
         {
-            if (EditorMode == EditorMode.Editing)
+            if (!_modeSwitchPressed)
             {
-                EditorMode = EditorMode.Moving;
+                if (EditorMode == EditorMode.Editing)
+                {
+                    EditorMode = EditorMode.Moving;
+                }
+                else
+                {
+                    EditorMode = EditorMode.Editing;
+                }
+                
+                _modeSwitchPressed = true;
             }
-            else
-            {
-                EditorMode = EditorMode.Editing;
-            }
+        }
+        else
+        {
+            _modeSwitchPressed = false;
+        }
+        
+        if (Input.IsKeyDown(Keys.Space))
+        {
+            EditorMode = EditorMode.Editing;
         }
         
         if (Input.IsKeyDown(Keys.Right) && _keyTimer <= 0)
