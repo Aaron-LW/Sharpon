@@ -440,7 +440,7 @@ public static class EditorMain
 
     public static void HandleKeybinds()
     {
-        if (Input.IsKeyPressed(Keys.Escape))
+        if (Input.IsKeyPressed(Keys.Escape) || Input.IsKeyPressed(Keys.CapsLock))
         {
             if (EditorMode == EditorMode.Editing)
             {

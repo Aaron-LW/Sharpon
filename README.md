@@ -24,7 +24,7 @@ Sharpon also doesnt support mouse input so its keyboard only
 `Ctrl+F` toggle file search <br>
 `Ctrl+Shift+F` remove all text in file search and close <br>
 
-`Escape` to switch editing modes (Edting = White cursor, Moving = Orange cursor) <br>
+`Escape/Capslock` to switch editing modes (Edting = White cursor, Moving = Orange cursor) <br>
 *while in moving mode* <br>
 `I/K/J/L` to move up down left and right <br>
 `Q/E` to go one character to the left/right <br>
