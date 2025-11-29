@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # Sharpon
 just some code editor because can. <br>
 This code editor is mainly intended for C# but can be used to edit anything. <br>
@@ -40,5 +39,3 @@ You cant type in moving mode
 - Code completion
 - actual not hardcoded syntax highlighting
 - Error highlighting (idk what its called)
-=======
->>>>>>> Stashed changes
