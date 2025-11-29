@@ -23,6 +23,7 @@ Sharpon also doesnt support mouse input so its keyboard only
 `Ctrl+B` move to next closing bracket <br>
 `Ctrl+F` toggle file search <br>
 `Ctrl+Shift+F` remove all text in file search and close <br>
+`Ctrl+M` Open keybinds menu in editor <br>
 
 `Escape/Capslock` to switch editing modes (Edting = White cursor, Moving = Orange cursor) <br>
 *while in moving mode* <br>
