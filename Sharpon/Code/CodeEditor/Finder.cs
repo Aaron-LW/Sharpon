@@ -44,7 +44,7 @@ public static class Finder
         else
         {
             _finderPosition.X = MathHelper.Lerp(_finderPosition.X, windowBounds.Width - _finderWidth - 20 * EditorMain.ScaleModifier, finderSpeed * Time.DeltaTime);
-            _finderPosition.Y = 0 + _finderHeight;
+            _finderPosition.Y = 0 + _finderHeight + 20;
         }
         
         
