@@ -256,6 +256,19 @@ public static class Terminal
             return;
         }
         
+        if (Text.Length > 4)
+        {
+            if (Text[0] == 'g' && Text[1] == 't' && Text[2] == 'l')
+            {
+                EditorMain.SetLineIndex(int.Parse(Text.Substring(4)) - 1);
+                SetText("");
+                SetCharIndex(0);
+                Toggle();
+                InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
+                return;
+            }
+        }
+        
         _terminalProcess.SendCommand(Text);
         if (Text != String.Empty && Text is not null)
         {

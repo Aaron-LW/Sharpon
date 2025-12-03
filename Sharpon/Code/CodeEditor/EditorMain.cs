@@ -12,6 +12,9 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using System.Text.RegularExpressions;
 using MonoGame.Extended.Graphics;
+using System.Threading;
+using Microsoft.CodeAnalysis.Completion;
+using System.Threading.Tasks;
 
 public static class EditorMain
 {
@@ -29,6 +32,11 @@ public static class EditorMain
     private static float _textOpacity = 1;
     private static Vector2 _lineBlockPosition;
     private static bool _modeSwitchPressed;
+    private static RoslynCompletionEngine _roslynCompleter = new RoslynCompletionEngine();
+    private static IReadOnlyList<CompletionResult> _completions;
+    private static CancellationTokenSource _completionCts;
+    private static Color _completionBackgroundColor = new Color(20, 18, 27);
+    private static Color _completionBackgroundLineColor = new Color(25, 23, 32);
 
     private static float _keyTimer = 0;
     private static bool _keyPressed = false;
@@ -57,13 +65,16 @@ public static class EditorMain
         string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LastOpenedFile.txt");
         if (File.Exists(file))
         {
-            LoadFile(File.ReadAllText(file));
+            //LoadFile(File.ReadAllText("/media/C#/roslynTest.cs"));
+            LoadFile("/media/MonoGame/Geometry_Smash/Geometry_Smash/Game1.cs");
         }
         else
         {
             FileDialog.Open();
             InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
         }
+        
+        _roslynCompleter.OpenDocument("");
     }
     
     public static void Draw(SpriteBatch spriteBatch)
@@ -141,6 +152,28 @@ public static class EditorMain
                                                       
         Color cursorColor = EditorMode == EditorMode.Editing ? Color.White : Color.Orange;
         spriteBatch.DrawString(font, "|", _cursorPosition * ScaleModifier, cursorColor);
+        
+        Vector2 completionPosition = _cursorPosition + new Vector2(10 * ScaleModifier, 10 * ScaleModifier);
+        
+        if (_completions != null)
+        {
+            spriteBatch.FillRectangle(new RectangleF(completionPosition.X - 5 * ScaleModifier,
+                                                     completionPosition.Y - 2 * ScaleModifier,
+                                                     250 * ScaleModifier,
+                                                     17 * _completions.Count * ScaleModifier),
+                                                     _completionBackgroundColor);
+                                                     
+            spriteBatch.DrawRectangle(new RectangleF(completionPosition.X - 5 * ScaleModifier,
+                                                     completionPosition.Y - 2 * ScaleModifier,
+                                                     250 * ScaleModifier,
+                                                     17 * _completions.Count * ScaleModifier),
+                                                     Color.RoyalBlue, 2);
+                                                     
+            for (int i = 0; i < _completions.Count; i++)
+            {
+                spriteBatch.DrawString(font, _completions[i].DisplayText, completionPosition + new Vector2(0, ((i * 17) * ScaleModifier)), Color.White);   
+            }
+        }
 
         //spriteBatch.DrawString(font, $"Lines: {Lines.Count}", new Vector2(150, 20) * ScaleModifier, Color.White);
         //spriteBatch.DrawString(font, $"Current Line: {LineIndex}", new Vector2(250, 20) * ScaleModifier, Color.White);
@@ -177,6 +210,7 @@ public static class EditorMain
     {
         lineIndex = VerifyLineIndex(lineIndex);
         LineIndex = lineIndex;
+        SetCharIndex(Line.Length);
     }
 
     public static void AddToLineIndex(int number)
@@ -205,10 +239,41 @@ public static class EditorMain
         FilePath = path;
     }
 
-    public static void SetSelectedLine(string line)
+    public static void SetSelectedLine(string line, string pressedKeys = null)
     {
         if (Line != line) UnsavedChanges = true;
+        string prevLine = Line;
         Line = line;
+        
+        if (pressedKeys == null) return;
+        if (prevLine == line) return; 
+        if (pressedKeys.Contains(' ')) return;
+        if (string.IsNullOrWhiteSpace(Line)) return;
+        
+        InitiateCompletions();
+    }
+    
+    private static void InitiateCompletions()
+    {
+        _ = Task.Run(async () =>
+        {
+            _completionCts?.Cancel();
+            _completionCts?.Dispose();
+            
+            _completionCts = new CancellationTokenSource();
+            var token = _completionCts.Token;
+            
+            try
+            {
+                var items = await GetCompletionsAsync(token);
+                _completions = items;
+            }
+            catch (OperationCanceledException)
+            {
+                
+            }
+           
+        });
     }
 
     public static void SetLine(string line, int lineIndex)
@@ -253,7 +318,6 @@ public static class EditorMain
             }
             
             //NotificationManager.CreateNotification("Loaded file: " + filePath, 3);
-
             SetCharIndex(LineLength);
             FilePath = filePath;
         }
@@ -284,6 +348,7 @@ public static class EditorMain
                 {
                     RemoveLine(LineIndex);
                     SetCharIndex(LineLength);
+                    InitiateCompletions();
                     return;
                 }
                 
@@ -294,6 +359,7 @@ public static class EditorMain
                 SetSelectedLine(Line + temp);
             }
 
+            InitiateCompletions();
             return;
         }
 
@@ -302,6 +368,7 @@ public static class EditorMain
             int nextIndex = NextControlLeftArrowIndex();
             SetSelectedLine(Line.Remove(nextIndex, CharIndex - nextIndex));
             SetCharIndex(nextIndex);
+            InitiateCompletions();
             return;
         }
 
@@ -314,12 +381,14 @@ public static class EditorMain
             {
                 SetSelectedLine(Line.Remove(CharIndex - 1, 2));
                 AddToCharIndex(-1);
+                InitiateCompletions();
                 return;
             }
         }
 
         SetSelectedLine(Line.Remove(CharIndex - 1, 1));
         AddToCharIndex(-1);
+        InitiateCompletions();
     }
 
     public static void HandleTab()
@@ -878,5 +947,32 @@ public static class EditorMain
         }
         
         return LineLength;
+    }
+
+    private static int GetAbsoluteCharIndex()
+    {
+        int chars = 0;
+        for (int i = 0; i < LineIndex; i++)
+        {
+            chars += Lines[i].Length + 1;
+        }
+
+        chars += CharIndex;
+        return chars;
+    }
+
+    private static async Task<IReadOnlyList<CompletionResult>> GetCompletionsAsync(CancellationToken cancelToken)
+    {
+        Console.WriteLine("Getting completions...");
+        string code = string.Join("\n", Lines);
+        _roslynCompleter.OpenDocument(code);
+        
+        int caret = GetAbsoluteCharIndex();
+        var items = await _roslynCompleter.GetCompletionsAsync(caret, cancelToken);
+        // Console.WriteLine("character before: " + code[caret - 1]);
+        // Console.WriteLine("character at charIndex: " + code[caret]);
+        // Console.WriteLine("character after: " + code[caret + 1]);
+        Console.WriteLine("results: " + items.Count);
+        return items;
     }
 }

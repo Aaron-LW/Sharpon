@@ -65,7 +65,7 @@ public static class InputHandler
         
         char previousChar = InputDistributor.PreviousChar;
         
-        InputDistributor.SetSelectedLine(InputDistributor.SelectedLine.Insert(InputDistributor.CharIndex, pressedKeys));
+        InputDistributor.SetSelectedLine(InputDistributor.SelectedLine.Insert(InputDistributor.CharIndex, pressedKeys), pressedKeys);
         InputDistributor.AddToCharIndex(pressedKeys.Length);
 
         if (pressedKeys.Contains(')') && previousChar == '(' ||

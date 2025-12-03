@@ -20,13 +20,13 @@ public static class InputDistributor
 
     private static InputReceiver _inputReceiver = InputReceiver.Editor;
 
-    public static void SetSelectedLine(string line)
+    public static void SetSelectedLine(string line, string pressedKeys = null)
     {
         switch (_inputReceiver)
         {
             case InputReceiver.Editor:
                 if (EditorMain.EditorMode == EditorMode.Moving) return;
-                EditorMain.SetSelectedLine(line);
+                EditorMain.SetSelectedLine(line, pressedKeys);
                 return;
 
             case InputReceiver.FileDialog:
