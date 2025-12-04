@@ -14,19 +14,21 @@ public class Game1 : Game
     private SpriteBatch _spriteBatch;
     private Color _backgroundColor = new Color(30, 28, 37);
 
-    public Game1()
+    public Game1(string fileToOpen = null)
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-        TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 180.0);
+        //TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 180.0);
         _graphics.SynchronizeWithVerticalRetrace = false;
-        IsFixedTimeStep = true;
+        IsFixedTimeStep = false;
 
         _graphics.ApplyChanges();
 
         Window.AllowUserResizing = true;
+        
+        if (fileToOpen != null) EditorMain.Start(Window, fileToOpen);
     }
 
     protected override void Initialize()

@@ -37,6 +37,7 @@ public static class EditorMain
     private static CancellationTokenSource _completionCts;
     private static Color _completionBackgroundColor = new Color(20, 18, 27);
     private static Color _completionBackgroundLineColor = new Color(25, 23, 32);
+    private static bool _started = false;
 
     private static float _keyTimer = 0;
     private static bool _keyPressed = false;
@@ -56,17 +57,28 @@ public static class EditorMain
         private set { Lines[LineIndex] = value; }    
     }
 
-    public static void Start(GameWindow gameWindow)
+    public static void Start(GameWindow gameWindow, string fileToOpen = null)
     {
+        if (_started) return;
+        
         string fontPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts", "JetBrainsMonoNLNerdFont-Bold.ttf"));
         FontSystem.AddFont(File.ReadAllBytes(fontPath));
         _gameWindow = gameWindow;
         
+        if (fileToOpen != null)
+        {
+            if (File.Exists(fileToOpen))
+            {
+                LoadFile(fileToOpen);
+                _started = true;
+            }
+        }
+        
         string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LastOpenedFile.txt");
         if (File.Exists(file))
         {
-            //LoadFile(File.ReadAllText("/media/C#/roslynTest.cs"));
-            LoadFile("/media/MonoGame/Geometry_Smash/Geometry_Smash/Game1.cs");
+            LoadFile(File.ReadAllText(file));
+            //LoadFile("/media/MonoGame/Geometry_Smash/Geometry_Smash/Game1.cs");
         }
         else
         {
@@ -75,6 +87,7 @@ public static class EditorMain
         }
         
         _roslynCompleter.OpenDocument("");
+        _started = true;
     }
     
     public static void Draw(SpriteBatch spriteBatch)
@@ -153,25 +166,36 @@ public static class EditorMain
         Color cursorColor = EditorMode == EditorMode.Editing ? Color.White : Color.Orange;
         spriteBatch.DrawString(font, "|", _cursorPosition * ScaleModifier, cursorColor);
         
-        Vector2 completionPosition = _cursorPosition + new Vector2(10 * ScaleModifier, 10 * ScaleModifier);
+        Vector2 completionPosition = _cursorPosition * ScaleModifier + new Vector2(10 * ScaleModifier, 10 * ScaleModifier);
         
-        if (_completions != null)
+        if (_completions != null && EditorMode == EditorMode.Editing)
         {
-            spriteBatch.FillRectangle(new RectangleF(completionPosition.X - 5 * ScaleModifier,
-                                                     completionPosition.Y - 2 * ScaleModifier,
-                                                     250 * ScaleModifier,
-                                                     17 * _completions.Count * ScaleModifier),
-                                                     _completionBackgroundColor);
-                                                     
-            spriteBatch.DrawRectangle(new RectangleF(completionPosition.X - 5 * ScaleModifier,
-                                                     completionPosition.Y - 2 * ScaleModifier,
-                                                     250 * ScaleModifier,
-                                                     17 * _completions.Count * ScaleModifier),
-                                                     Color.RoyalBlue, 2);
-                                                     
-            for (int i = 0; i < _completions.Count; i++)
+            if (_completions.Count > 0)
             {
-                spriteBatch.DrawString(font, _completions[i].DisplayText, completionPosition + new Vector2(0, ((i * 17) * ScaleModifier)), Color.White);   
+                spriteBatch.FillRectangle(new RectangleF(completionPosition.X - 5 * ScaleModifier,
+                                                         completionPosition.Y - 2 * ScaleModifier,
+                                                         250 * ScaleModifier,
+                                                         17 * _completions.Count * ScaleModifier + (5 * ScaleModifier)),
+                                                         _completionBackgroundColor);
+                                                     
+                spriteBatch.DrawRectangle(new RectangleF(completionPosition.X - 5 * ScaleModifier,
+                                                         completionPosition.Y - 2 * ScaleModifier,
+                                                         250 * ScaleModifier,
+                                                         17 * _completions.Count * ScaleModifier + (5 * ScaleModifier)),
+                                                         Color.RoyalBlue, 2); 
+                                                     
+                string completionPrefix = GetCompletionPrefix();
+                for (int i = 0; i < _completions.Count; i++)
+                {
+                    Vector2 actualCompletionPosition = completionPosition + new Vector2(0, (i * 17) * ScaleModifier);
+                    //spriteBatch.FillRectangle(new RectangleF(actualCompletionPosition.X,
+                                                             //actualCompletionPosition.Y,
+                                                             //font.MeasureString(completionPrefix).X,
+                                                             //font.MeasureString(completionPrefix).Y),
+                                                             //Color.Yellow * 0.5f);
+                                                             
+                    spriteBatch.DrawString(font, _completions[i].DisplayText, actualCompletionPosition, Color.White);
+                }
             }
         }
 
@@ -963,16 +987,43 @@ public static class EditorMain
 
     private static async Task<IReadOnlyList<CompletionResult>> GetCompletionsAsync(CancellationToken cancelToken)
     {
-        Console.WriteLine("Getting completions...");
         string code = string.Join("\n", Lines);
         _roslynCompleter.OpenDocument(code);
         
         int caret = GetAbsoluteCharIndex();
         var items = await _roslynCompleter.GetCompletionsAsync(caret, cancelToken);
-        // Console.WriteLine("character before: " + code[caret - 1]);
-        // Console.WriteLine("character at charIndex: " + code[caret]);
-        // Console.WriteLine("character after: " + code[caret + 1]);
-        Console.WriteLine("results: " + items.Count);
         return items;
     }
+
+    public static string GetCompletionPrefix()
+    {
+        string code = string.Join("\n", Lines);
+        int caretIndex = GetAbsoluteCharIndex();
+        
+        if (caretIndex == 0)
+            return "";
+
+        int start = caretIndex - 1;
+
+        while (start >= 0)
+        {
+            char c = code[start];
+
+            if (!IsIdentifierChar(c))
+                break;
+
+            start--;
+        }
+
+        // start stopped one before the beginning of the word
+        int wordStart = start + 1;
+
+        return code.Substring(wordStart, caretIndex - wordStart);
+    }
+
+    private static bool IsIdentifierChar(char c)
+    {
+        return char.IsLetterOrDigit(c) || c == '_';
+    }
+
 }
