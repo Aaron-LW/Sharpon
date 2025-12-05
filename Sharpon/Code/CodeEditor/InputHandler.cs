@@ -65,6 +65,10 @@ public static class InputHandler
         
         char previousChar = InputDistributor.PreviousChar;
         
+        if (InputDistributor.CharIndex > InputDistributor.SelectedLine.Length)
+        {
+            InputDistributor.SetCharIndex(InputDistributor.SelectedLine.Length);
+        }
         InputDistributor.SetSelectedLine(InputDistributor.SelectedLine.Insert(InputDistributor.CharIndex, pressedKeys), pressedKeys);
         InputDistributor.AddToCharIndex(pressedKeys.Length);
 

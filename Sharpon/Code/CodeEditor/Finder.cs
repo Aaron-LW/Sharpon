@@ -132,7 +132,11 @@ public static class Finder
         if (Input.IsKeyPressed(Keys.Escape) || Input.IsKeyPressed(Keys.F) && Input.IsKeyDown(Keys.LeftControl))
         {
             InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.Editor);
-            if (Text == "") Close();
+            if (Text == "")
+            {
+                Close();
+                return;
+            }
             
             if (Input.IsKeyDown(Keys.LeftShift))
             {

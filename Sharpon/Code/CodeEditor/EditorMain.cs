@@ -44,7 +44,6 @@ public static class EditorMain
     private static float _baseKeyTimer = 0.2f;
     private static float _baseFastKeyTimer = 0.04f;
     private static float _baseVeryFastKeyTimer = 0.015f;
-    
 
     public static EditorMode EditorMode { get; private set; } = EditorMode.Editing;
     public static FontSystem FontSystem = new FontSystem();
@@ -87,7 +86,6 @@ public static class EditorMain
             InputDistributor.SetInputReceiver(InputDistributor.InputReceiver.FileDialog);
         }
         
-        _roslynCompleter.OpenDocument("");
         _started = true;
     }
     
@@ -109,15 +107,15 @@ public static class EditorMain
             
             if (i == LineIndex)
             {
-                Vector2 position = new Vector2(_codePosition.X - font.MeasureString(i.ToString()).X / ScaleModifier - 15 * ScaleModifier,
+                Vector2 position = new Vector2(_codePosition.X - font.MeasureString(lineCount.ToString()).X / ScaleModifier - 15 * ScaleModifier,
                                                _codePosition.Y + (LineIndex * _lineSpacing)) * ScaleModifier;
 
                 _lineBlockPosition = new Vector2(MathHelper.Lerp(_lineBlockPosition.X, position.X, cursorSpeed * Time.DeltaTime),
                                                  MathHelper.Lerp(_lineBlockPosition.Y, position.Y, cursorSpeed * Time.DeltaTime));
                 
                 spriteBatch.FillRectangle(new RectangleF(_lineBlockPosition,
-                                                         new SizeF(font.MeasureString(i.ToString()).X,
-                                                         font.MeasureString(i.ToString()).Y)),
+                                                         new SizeF(font.MeasureString(lineCount.ToString()).X,
+                                                         font.MeasureString(lineCount.ToString()).Y)),
                                                          Color.White * 0.5f);
             }
             
@@ -340,6 +338,7 @@ public static class EditorMain
             //NotificationManager.CreateNotification("Loaded file: " + filePath, 3);
             SetCharIndex(LineLength);
             FilePath = filePath;
+            _roslynCompleter.OpenDocument(string.Join("\n", Lines));
         }
         else
         {
@@ -983,7 +982,7 @@ public static class EditorMain
     private static async Task<IReadOnlyList<CompletionResult>> GetCompletionsAsync(CancellationToken cancelToken)
     {
         string code = string.Join("\n", Lines);
-        _roslynCompleter.OpenDocument(code);
+        _roslynCompleter.UpdateDocumentIncremental(code);
         
         int caret = GetAbsoluteCharIndex();
         var items = await _roslynCompleter.GetCompletionsAsync(caret, cancelToken);

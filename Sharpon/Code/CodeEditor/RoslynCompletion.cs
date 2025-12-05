@@ -69,6 +69,17 @@ public class RoslynCompletionEngine : IDisposable
         _project = _workspace.CurrentSolution.GetProject(_project.Id);
     }
     
+    public void UpdateDocumentIncremental(string newText)
+    {
+        var document = _workspace.CurrentSolution.GetDocument(_documentId);
+        var sourceText = document.GetTextAsync().GetAwaiter().GetResult();
+        
+        var newSourceText = SourceText.From(newText);
+        
+        var updated = document.WithText(newSourceText);
+        _workspace.TryApplyChanges(updated.Project.Solution);
+    }
+    
     public async Task<IReadOnlyList<CompletionResult>> GetCompletionsAsync(int position, CancellationToken cancellationToken)
     {
         var document = _workspace.CurrentSolution.GetDocument(_documentId);
