@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using FontStashSharp;
 using Microsoft.Xna.Framework.Input;
 using System.IO;
+using System.Diagnostics;
 
 public static class Terminal
 {
@@ -251,6 +252,14 @@ public static class Terminal
         if (Text == "clear")
         {
             _lines.Clear();
+            SetText("");
+            SetCharIndex(0);
+            return;
+        }
+        
+        if (Text == "stop")
+        {
+            _terminalProcess.Restart();
             SetText("");
             SetCharIndex(0);
             return;

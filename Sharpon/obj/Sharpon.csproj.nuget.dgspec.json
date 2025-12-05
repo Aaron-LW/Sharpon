@@ -65,7 +65,15 @@
               "target": "Package",
               "version": "[4.8.0, )"
             },
+            "Microsoft.CodeAnalysis.CSharp.Workspaces": {
+              "target": "Package",
+              "version": "[4.8.0, )"
+            },
             "Microsoft.CodeAnalysis.Features": {
+              "target": "Package",
+              "version": "[4.8.0, )"
+            },
+            "Microsoft.CodeAnalysis.Workspaces.Common": {
               "target": "Package",
               "version": "[4.8.0, )"
             },
@@ -109,6 +117,11 @@
             }
           },
           "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.110/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
         }
       }
     }

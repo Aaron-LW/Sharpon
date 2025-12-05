@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Tags;
+using Microsoft.CodeAnalysis.Features;
 
 public class RoslynCompletionEngine : IDisposable
 {
@@ -88,18 +89,28 @@ public class RoslynCompletionEngine : IDisposable
 
         var src = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
         int start = position;
-        while (start > 0 && char.IsLetterOrDigit(src[start - 1])) start--;
+        while (start > 0 && (char.IsLetterOrDigit(src[start - 1]) || src[start - 1] == '_'))
+            start--;
+
         var prefix = src.ToString(new TextSpan(start, position - start));
 
-        var results = await completionService.GetCompletionsAsync(document, position, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var results = await completionService.GetCompletionsAsync(
+            document, position, cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
+
         if (results == null) return Array.Empty<CompletionResult>();
 
         var list = new List<CompletionResult>(results.ItemsList.Count);
+
         foreach (var item in results.ItemsList)
         {
             var filterText = (item.FilterText ?? item.DisplayText) ?? string.Empty;
-            if (!string.IsNullOrEmpty(prefix) &&
-                !filterText.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+
+            string normalizedFilter = filterText.TrimStart('_');
+            string normalizedPrefix = prefix.TrimStart('_');
+
+            if (!string.IsNullOrEmpty(normalizedPrefix) &&
+                !normalizedFilter.StartsWith(normalizedPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -125,6 +136,7 @@ public class RoslynCompletionEngine : IDisposable
 
         return list;
     }
+
 
     
     static IEnumerable<MetadataReference> GetAllDefaultReferences()

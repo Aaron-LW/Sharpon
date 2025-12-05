@@ -58,6 +58,8 @@ public static class TextToColor
         { "Queue", Color.SpringGreen },
         { "List", Color.SpringGreen },
         { "var", Color.RoyalBlue },
-        { "continue", Color.Purple }
+        { "continue", Color.Purple },
+        { "break", Color.Purple },
+        { "namespace", Color.RoyalBlue }
     };
 }

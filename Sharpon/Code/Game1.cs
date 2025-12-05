@@ -20,9 +20,9 @@ public class Game1 : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-        //TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 180.0);
-        _graphics.SynchronizeWithVerticalRetrace = false;
-        IsFixedTimeStep = false;
+        TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 180.0);
+        _graphics.SynchronizeWithVerticalRetrace = true;
+        IsFixedTimeStep = true;
 
         _graphics.ApplyChanges();
 

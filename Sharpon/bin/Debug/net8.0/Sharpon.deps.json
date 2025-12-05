@@ -13,7 +13,9 @@
           "Microsoft.CodeAnalysis": "4.8.0",
           "Microsoft.CodeAnalysis.CSharp": "4.8.0",
           "Microsoft.CodeAnalysis.CSharp.Features": "4.8.0",
+          "Microsoft.CodeAnalysis.CSharp.Workspaces": "4.8.0",
           "Microsoft.CodeAnalysis.Features": "4.8.0",
+          "Microsoft.CodeAnalysis.Workspaces.Common": "4.8.0",
           "MonoGame.Content.Builder.Task": "3.8.4.1",
           "MonoGame.Framework.DesktopGL": "3.8.4.1"
         },

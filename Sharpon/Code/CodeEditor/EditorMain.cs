@@ -186,6 +186,7 @@ public static class EditorMain
                 string completionPrefix = GetCompletionPrefix();
                 for (int i = 0; i < _completions.Count; i++)
                 {
+                    if (i > _completions.Count) break;
                     Vector2 actualCompletionPosition = completionPosition + new Vector2(0, (i * 18) * ScaleModifier);
                     if (actualCompletionPosition.Y > _gameWindow.ClientBounds.Height) continue;
                     spriteBatch.DrawString(font, _completions[i].DisplayText, actualCompletionPosition, Color.White);
