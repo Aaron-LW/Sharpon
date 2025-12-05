@@ -203,6 +203,7 @@ public static class InputDistributor
     
     public static char GetPreviousChar()
     {
+        Console.WriteLine(CharIndex);
         if (CharIndex == 0)
         {
             if (LineLength > 0)

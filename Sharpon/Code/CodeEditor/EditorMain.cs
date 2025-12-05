@@ -44,6 +44,7 @@ public static class EditorMain
     private static float _baseKeyTimer = 0.2f;
     private static float _baseFastKeyTimer = 0.04f;
     private static float _baseVeryFastKeyTimer = 0.015f;
+    
 
     public static EditorMode EditorMode { get; private set; } = EditorMode.Editing;
     public static FontSystem FontSystem = new FontSystem();
@@ -166,7 +167,7 @@ public static class EditorMain
         Color cursorColor = EditorMode == EditorMode.Editing ? Color.White : Color.Orange;
         spriteBatch.DrawString(font, "|", _cursorPosition * ScaleModifier, cursorColor);
         
-        Vector2 completionPosition = _cursorPosition * ScaleModifier + new Vector2(10 * ScaleModifier, 10 * ScaleModifier);
+        Vector2 completionPosition = _cursorPosition * ScaleModifier + new Vector2(15 * ScaleModifier, 14 * ScaleModifier);
         
         if (_completions != null && EditorMode == EditorMode.Editing)
         {
@@ -175,25 +176,20 @@ public static class EditorMain
                 spriteBatch.FillRectangle(new RectangleF(completionPosition.X - 5 * ScaleModifier,
                                                          completionPosition.Y - 2 * ScaleModifier,
                                                          250 * ScaleModifier,
-                                                         17 * _completions.Count * ScaleModifier + (5 * ScaleModifier)),
+                                                         18 * _completions.Count * ScaleModifier + (5 * ScaleModifier)),
                                                          _completionBackgroundColor);
                                                      
                 spriteBatch.DrawRectangle(new RectangleF(completionPosition.X - 5 * ScaleModifier,
                                                          completionPosition.Y - 2 * ScaleModifier,
                                                          250 * ScaleModifier,
-                                                         17 * _completions.Count * ScaleModifier + (5 * ScaleModifier)),
+                                                         18 * _completions.Count * ScaleModifier + (7 * ScaleModifier)),
                                                          Color.RoyalBlue, 2); 
                                                      
                 string completionPrefix = GetCompletionPrefix();
                 for (int i = 0; i < _completions.Count; i++)
                 {
-                    Vector2 actualCompletionPosition = completionPosition + new Vector2(0, (i * 17) * ScaleModifier);
-                    //spriteBatch.FillRectangle(new RectangleF(actualCompletionPosition.X,
-                                                             //actualCompletionPosition.Y,
-                                                             //font.MeasureString(completionPrefix).X,
-                                                             //font.MeasureString(completionPrefix).Y),
-                                                             //Color.Yellow * 0.5f);
-                                                             
+                    Vector2 actualCompletionPosition = completionPosition + new Vector2(0, (i * 18) * ScaleModifier);
+                    if (actualCompletionPosition.Y > _gameWindow.ClientBounds.Height) continue;
                     spriteBatch.DrawString(font, _completions[i].DisplayText, actualCompletionPosition, Color.White);
                 }
             }
@@ -329,7 +325,7 @@ public static class EditorMain
         if (File.Exists(filePath))
         {
             string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LastOpenedFile.txt");
-            if (!File.Exists(file)) File.Create(file);
+            if (!File.Exists(file)) using (var fileStream = File.Create(file)) {}
             File.WriteAllText(file, filePath);
             
             if (UnsavedChanges) SaveFile(FilePath);
@@ -820,7 +816,6 @@ public static class EditorMain
         {
             if (CharIndex != 0)
             {
-                Console.WriteLine(NextControlLeftArrowIndex());
                 SetCharIndex(NextControlLeftArrowIndex());
             }
             

@@ -137,6 +137,8 @@ public static class Finder
             if (Input.IsKeyDown(Keys.LeftShift))
             {
                 Text = "";
+                SetCharIndex(0);
+                Close();
             }
         }
     }

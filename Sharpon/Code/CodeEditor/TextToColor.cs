@@ -57,6 +57,7 @@ public static class TextToColor
         { "Vector2", Color.SpringGreen },
         { "Queue", Color.SpringGreen },
         { "List", Color.SpringGreen },
-        { "var", Color.RoyalBlue }
+        { "var", Color.RoyalBlue },
+        { "continue", Color.Purple }
     };
 }
