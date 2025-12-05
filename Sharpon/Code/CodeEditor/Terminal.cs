@@ -259,7 +259,8 @@ public static class Terminal
         
         if (Text == "stop")
         {
-            _terminalProcess.Restart();
+            _terminalProcess.Stop();
+            _terminalProcess.Start(true, "cd " + Path.GetDirectoryName(EditorMain.FilePath));
             SetText("");
             SetCharIndex(0);
             return;

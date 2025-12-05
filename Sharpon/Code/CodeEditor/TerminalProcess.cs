@@ -50,24 +50,12 @@ public class TerminalProcess
             {
                 _process.Kill(entireProcessTree: true);
                 _process.Dispose();
-
-                Console.WriteLine("Closed terminal succesfully");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error when closing terminal: {ex.Message}");
         }
-    }
-    
-    public void Restart()
-    {
-        _logOutput = true;
-        SendCommand("pwd");
-        
-        Stop();
-        Start(true, "cd " + _outputLog);
-        _logOutput = false;
     }
     
     public void SendCommand(string command)
@@ -85,6 +73,7 @@ public class TerminalProcess
             if (_logOutput)
             {
                 _outputLog = line;
+                _logOutput = false;
             }
             
             Terminal.Print(line);
