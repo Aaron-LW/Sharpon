@@ -397,7 +397,7 @@ public static class EditorMain
             if (Line[CharIndex] == '}' && Line[CharIndex - 1] == '{' ||
                 Line[CharIndex] == ')' && Line[CharIndex - 1] == '(' ||
                 Line[CharIndex] == ']' && Line[CharIndex - 1] == '[' ||
-                Line[CharIndex] == '"' && Line[CharIndex - 1] == '"' )
+                Line[CharIndex] == '"' && Line[CharIndex - 1] == '"')
             {
                 SetSelectedLine(Line.Remove(CharIndex - 1, 2));
                 AddToCharIndex(-1);

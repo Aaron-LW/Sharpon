@@ -319,6 +319,7 @@ public static class Terminal
         IsOpened = !IsOpened;
         if (IsOpened)
         {
+            Console.WriteLine("Filepath: " + EditorMain.FilePath);
             string solutionFilePath = FileDialog.TryGetSolutionDirectoryInfo(Path.GetDirectoryName(EditorMain.FilePath));
             if (solutionFilePath != null)
             {
