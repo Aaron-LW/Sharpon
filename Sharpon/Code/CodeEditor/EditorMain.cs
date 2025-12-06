@@ -38,6 +38,7 @@ public static class EditorMain
     private static Color _completionBackgroundColor = new Color(20, 18, 27);
     private static Color _completionBackgroundLineColor = new Color(25, 23, 32);
     private static bool _started = false;
+    private static int _completionIndex = 0;
 
     private static float _keyTimer = 0;
     private static bool _keyPressed = false;
@@ -189,6 +190,16 @@ public static class EditorMain
                     if (i > _completions.Count) break;
                     Vector2 actualCompletionPosition = completionPosition + new Vector2(0, (i * 18) * ScaleModifier);
                     if (actualCompletionPosition.Y > _gameWindow.ClientBounds.Height) continue;
+                    
+                    if (i == _completionIndex)
+                    {
+                        spriteBatch.FillRectangle(new RectangleF(actualCompletionPosition.X,
+                                                                 actualCompletionPosition.Y + 3 * ScaleModifier,
+                                                                 font.MeasureString(_completions[i].DisplayText).X,
+                                                                 font.MeasureString(_completions[i].DisplayText).Y - 3 * ScaleModifier),
+                                                                 Color.Yellow * 0.7f);
+                    }
+                    
                     spriteBatch.DrawString(font, _completions[i].DisplayText, actualCompletionPosition, Color.White);
                 }
             }
@@ -291,7 +302,8 @@ public static class EditorMain
             {
                 
             }
-           
+            
+            _completionIndex = 0;
         });
     }
 
@@ -340,6 +352,7 @@ public static class EditorMain
             SetCharIndex(LineLength);
             FilePath = filePath;
             _roslynCompleter.OpenDocument(string.Join("\n", Lines));
+            _roslynCompleter.RefreshLoadedAssemblyReferences();
         }
         else
         {
@@ -845,7 +858,26 @@ public static class EditorMain
     
     private static void HandleKeybindsEditing()
     {
-        
+        if (Input.IsKeyDown(Keys.LeftControl) && _keyTimer <= 0)
+        {
+            if (Input.IsKeyDown(Keys.K) && _keyTimer <= 0)
+            {
+                _completionIndex++;
+                if (_completionIndex > _completions.Count - 1) _completionIndex = _completions.Count - 1;
+                
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
+            
+            if (Input.IsKeyDown(Keys.I) && _keyTimer <= 0)
+            {
+                _completionIndex--;
+                
+                if (_completionIndex < 0) _completionIndex = 0;
+                ResetKeyTimer();
+                _keyPressed = true;
+            }
+        }
     }
     
     private static void ResetKeyTimer(bool fast = false)

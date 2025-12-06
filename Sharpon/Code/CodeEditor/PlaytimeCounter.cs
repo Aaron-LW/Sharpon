@@ -15,7 +15,8 @@ public static class PlayTimeCounter
     public static void Start(GameWindow gameWindow)
     {
         _gameWindow = gameWindow;
-        _filePath = Path.Combine(Directory.GetCurrentDirectory(), "playtime.txt");
+        _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "playtime.txt");
+        Console.WriteLine(_filePath);
         
         if (!File.Exists(_filePath))
         {

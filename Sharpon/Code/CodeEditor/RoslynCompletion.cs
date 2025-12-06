@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Features;
+using System.IO;
+using System.Collections.Concurrent;
 
 public class RoslynCompletionEngine : IDisposable
 {
@@ -43,10 +45,7 @@ public class RoslynCompletionEngine : IDisposable
         _project = _workspace.CurrentSolution.GetProject(projectId);
         
         
-        var refs = GetAllDefaultReferences()
-        .Concat(new[] {
-            CSharpFeaturesReference,
-            });;
+        var refs = GetAllDefaultReferences();
         _project = _project.AddMetadataReferences(refs);
         _project = _project.WithParseOptions(parseOptions);
         _workspace.TryApplyChanges(_project.Solution);
@@ -141,10 +140,94 @@ public class RoslynCompletionEngine : IDisposable
     
     static IEnumerable<MetadataReference> GetAllDefaultReferences()
     {
-        return AppDomain.CurrentDomain
-                .GetAssemblies()
-                .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
-                .Select(a => MetadataReference.CreateFromFile(a.Location));
+        var paths = new List<string>();
+
+        // 1) Trusted platform assemblies (best for .NET Core / .NET 5+)
+        try
+        {
+            var tpaObj = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
+            if (!string.IsNullOrEmpty(tpaObj))
+            {
+                foreach (var p in tpaObj.Split(Path.PathSeparator))
+                {
+                    if (!string.IsNullOrEmpty(p) && File.Exists(p) && !paths.Contains(p))
+                        paths.Add(p);
+                }
+            }
+        }
+        catch
+        {
+            // ignore if not available on this runtime
+        }
+
+        // 2) Assemblies currently loaded into the AppDomain (e.g. MonoGame)
+        try
+        {
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                try
+                {
+                    if (asm.IsDynamic) continue;
+                    var loc = asm.Location;
+                    if (string.IsNullOrEmpty(loc)) continue;
+                    if (!paths.Contains(loc))
+                        paths.Add(loc);
+                }
+                catch
+                {
+                    // some assemblies can throw on Location — ignore them
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        // 3) Ensure a few essentials are present (defensive)
+        void TryAdd(Type t)
+        {
+            try
+            {
+                var loc = t.Assembly.Location;
+                if (!string.IsNullOrEmpty(loc) && !paths.Contains(loc))
+                    paths.Add(loc);
+            }
+            catch { }
+        }
+
+        TryAdd(typeof(object));
+        TryAdd(typeof(Console));
+        TryAdd(typeof(Enumerable));
+
+        // Create MetadataReference list (deduplicated)
+        var refs = new List<MetadataReference>();
+        foreach (var p in paths)
+        {
+            try
+            {
+                refs.Add(MetadataReference.CreateFromFile(p));
+            }
+            catch
+            {
+                // skip invalid files
+            }
+        }
+
+        return refs;
+    }
+
+    public void RefreshLoadedAssemblyReferences()
+    {
+        var refs = GetAllDefaultReferences();
+        // Filter out ones already present to avoid duplicates (by display)
+        var existing = new HashSet<string>(_project.MetadataReferences.Select(r => (r.Display ?? "").ToLowerInvariant()));
+        var toAdd = refs.Where(r => !existing.Contains((r.Display ?? "").ToLowerInvariant())).ToArray();
+        if (toAdd.Length > 0)
+        {
+            _project = _project.AddMetadataReferences(toAdd);
+            _workspace.TryApplyChanges(_project.Solution);
+        }
     }
     
     public void Dispose()
