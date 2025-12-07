@@ -39,6 +39,7 @@ public static class EditorMain
     private static Color _completionBackgroundLineColor = new Color(25, 23, 32);
     private static bool _started = false;
     private static int _completionIndex = 0;
+    private static bool _completionsOutdated = false;
 
     private static float _keyTimer = 0;
     private static bool _keyPressed = false;
@@ -168,7 +169,7 @@ public static class EditorMain
         
         Vector2 completionPosition = _cursorPosition * ScaleModifier + new Vector2(15 * ScaleModifier, 14 * ScaleModifier);
         
-        if (_completions != null && EditorMode == EditorMode.Editing && CharIndex != 0)
+        if (_completions != null && EditorMode == EditorMode.Editing && CharIndex != 0 && !_completionsOutdated)
         {
             if (_completions.Count > 0)
             {
@@ -210,14 +211,28 @@ public static class EditorMain
 
     public static void SetCharIndex(int charIndex)
     {
+        int prevCharIndex = CharIndex;
         charIndex = VerifyCharIndex(charIndex);
         CharIndex = charIndex;
+        
+        if (prevCharIndex != CharIndex)
+        {
+            _completionsOutdated = true;
+            InitiateCompletions();
+        }
     }
 
     public static void AddToCharIndex(int number)
     {
+        int prevCharIndex = CharIndex;
         CharIndex += number;
         CharIndex = VerifyCharIndex(CharIndex);
+        
+        if (prevCharIndex != CharIndex)
+        {
+            _completionsOutdated = true;
+            InitiateCompletions();
+        }
     }
 
     public static int VerifyCharIndex(int charIndex)
@@ -237,15 +252,29 @@ public static class EditorMain
 
     public static void SetLineIndex(int lineIndex)
     {
+        int prevLineIndex = LineIndex;
         lineIndex = VerifyLineIndex(lineIndex);
         LineIndex = lineIndex;
         SetCharIndex(Line.Length);
+        
+        if (prevLineIndex != lineIndex)
+        {
+            _completionsOutdated = true;
+            InitiateCompletions();
+        }
     }
 
     public static void AddToLineIndex(int number)
     {
+        int prevLineIndex = LineIndex;
         LineIndex += number;
         LineIndex = VerifyLineIndex(LineIndex);
+        
+        if (prevLineIndex != LineIndex)
+        {
+            _completionsOutdated = true;
+            InitiateCompletions();
+        }
     }
 
     public static int VerifyLineIndex(int lineIndex)
@@ -273,18 +302,20 @@ public static class EditorMain
         if (Line != line) UnsavedChanges = true;
         string prevLine = Line;
         Line = line;
+        if (prevLine != line) _completionsOutdated = true;
         
         if (pressedKeys == null) return;
-        if (prevLine == line) return; 
-        if (pressedKeys.Contains(' ')) return;
-        if (string.IsNullOrWhiteSpace(Line)) return;
-        if (CharIndex == 0) return;
+        if (prevLine == Line) return;
         
         InitiateCompletions();
     }
     
     private static void InitiateCompletions()
     {
+        if (string.IsNullOrWhiteSpace(Line)) return;
+        if (CharIndex == 0) return;
+        if (InputDistributor.PreviousChar == ';') return;
+        
         _ = Task.Run(async () =>
         {
             _completionCts?.Cancel();
@@ -303,6 +334,7 @@ public static class EditorMain
                 
             }
             
+            _completionsOutdated = false;
             _completionIndex = 0;
         });
     }
@@ -1027,12 +1059,13 @@ public static class EditorMain
         int totalChars = 0;
         for (int i = 0; i < Lines.Count; i++)
         {
-            if (totalChars + (Lines[i].Length + 1) >= absoluteCharIndex)
+            totalChars += Lines[i].Length + 1;
+            
+            if (totalChars >= absoluteCharIndex)
             {
-                return absoluteCharIndex - totalChars;
+                return totalChars - absoluteCharIndex - 1;
             }
             
-            totalChars += Lines[i].Length + 1;
         }
         
         return -1;
@@ -1052,9 +1085,12 @@ public static class EditorMain
     {
         if (_completionIndex > _completions.Count - 1) { Console.WriteLine("Completionindex out of bounds"); return; }
         if (CharIndex == 0) return;
+        if (_completionsOutdated) return;
         int spanStart = GetUnAbsoluteCharIndex(_completions[_completionIndex].SpanStart);
         if (spanStart == 1) spanStart--;
-        int spanLength = CharIndex - spanStart;
+        int spanLength = _completions[_completionIndex].SpanLength;
+        spanStart += CharIndex - spanLength * 2;
+        spanStart -= Line.Substring(CharIndex, LineLength - CharIndex).Length;
         string displayText = _completions[_completionIndex].DisplayText;
         
         SetSelectedLine(Line.Remove(spanStart, spanLength));

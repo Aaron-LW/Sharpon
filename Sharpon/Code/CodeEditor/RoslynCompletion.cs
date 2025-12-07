@@ -26,6 +26,7 @@ public class RoslynCompletionEngine : IDisposable
     {
         _workspace = new AdhocWorkspace();
         InitializeProject();
+        
     }
     
     private void InitializeProject()
@@ -132,6 +133,10 @@ public class RoslynCompletionEngine : IDisposable
                 CompletionItem = item
             });
         }
+        
+        list = list.OrderBy(item => GetItemPriority(item.CompletionItem))
+                   .ThenBy(item => item.DisplayText, StringComparer.OrdinalIgnoreCase)
+                   .ToList();
 
         return list;
     }
@@ -228,6 +233,22 @@ public class RoslynCompletionEngine : IDisposable
             _project = _project.AddMetadataReferences(toAdd);
             _workspace.TryApplyChanges(_project.Solution);
         }
+    }
+    
+    private static int GetItemPriority(CompletionItem item)
+    {
+        if (item.Tags.Contains("Local")) return 0;
+        if (item.Tags.Contains("Parameter")) return 0;
+        if (item.Tags.Contains("Field")) return 1;
+        
+        if (item.Tags.Contains("Keyword")) return 2;
+        if (item.Tags.Contains("Method")) return 3;
+        
+        if (item.Tags.Contains("Class")) return 4;
+        if (item.Tags.Contains("Struct")) return 4;
+        if (item.Tags.Contains("Enum")) return 4;
+        if (item.Tags.Contains("Interface")) return 4;
+        return 100;
     }
     
     public void Dispose()
