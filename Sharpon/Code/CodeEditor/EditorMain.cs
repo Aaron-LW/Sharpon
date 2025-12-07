@@ -168,7 +168,7 @@ public static class EditorMain
         
         Vector2 completionPosition = _cursorPosition * ScaleModifier + new Vector2(15 * ScaleModifier, 14 * ScaleModifier);
         
-        if (_completions != null && EditorMode == EditorMode.Editing)
+        if (_completions != null && EditorMode == EditorMode.Editing && CharIndex != 0)
         {
             if (_completions.Count > 0)
             {
@@ -184,7 +184,6 @@ public static class EditorMain
                                                          18 * _completions.Count * ScaleModifier + (7 * ScaleModifier)),
                                                          Color.RoyalBlue, 2); 
                                                      
-                string completionPrefix = GetCompletionPrefix();
                 for (int i = 0; i < _completions.Count; i++)
                 {
                     if (i > _completions.Count) break;
@@ -279,6 +278,7 @@ public static class EditorMain
         if (prevLine == line) return; 
         if (pressedKeys.Contains(' ')) return;
         if (string.IsNullOrWhiteSpace(Line)) return;
+        if (CharIndex == 0) return;
         
         InitiateCompletions();
     }
@@ -424,9 +424,19 @@ public static class EditorMain
         InitiateCompletions();
     }
 
-    public static void HandleTab()
+    public static void HandleTab(bool noCompletion = false)
     {
+        if (_completions != null && EditorMode != EditorMode.Moving && !noCompletion && CharIndex != 0)
+        {
+            if (_completions.Count > 0)
+            {
+                DoCodeCompletion();
+                return;
+            }
+        }
+        
         if (EditorMode == EditorMode.Moving) EditorMode = EditorMode.Editing;
+        
         
         if (Input.IsKeyDown(Keys.LeftShift))
         {
@@ -529,7 +539,7 @@ public static class EditorMain
                 Lines.Insert(LineIndex + 2, spacesString);
                 Lines.Insert(LineIndex + 3, spacesString + insert);
                 AddToLineIndex(2);
-                HandleTab();
+                HandleTab(true);
 
                 SetCharIndex(CharIndex);
                 UnsavedChanges = true;
@@ -542,7 +552,7 @@ public static class EditorMain
         Lines.Insert(LineIndex + 1, spacesString + insert);
         AddToLineIndex(1);
         SetCharIndex(spaces);
-        if (tab) HandleTab();
+        if (tab) HandleTab(true);
         UnsavedChanges = true;
     }
 
@@ -1011,6 +1021,22 @@ public static class EditorMain
         chars += CharIndex;
         return chars;
     }
+    
+    private static int GetUnAbsoluteCharIndex(int absoluteCharIndex)
+    {
+        int totalChars = 0;
+        for (int i = 0; i < Lines.Count; i++)
+        {
+            if (totalChars + (Lines[i].Length + 1) >= absoluteCharIndex)
+            {
+                return absoluteCharIndex - totalChars;
+            }
+            
+            totalChars += Lines[i].Length + 1;
+        }
+        
+        return -1;
+    }
 
     private static async Task<IReadOnlyList<CompletionResult>> GetCompletionsAsync(CancellationToken cancelToken)
     {
@@ -1022,35 +1048,19 @@ public static class EditorMain
         return items;
     }
 
-    public static string GetCompletionPrefix()
+    private static void DoCodeCompletion()
     {
-        string code = string.Join("\n", Lines);
-        int caretIndex = GetAbsoluteCharIndex();
+        if (_completionIndex > _completions.Count - 1) { Console.WriteLine("Completionindex out of bounds"); return; }
+        if (CharIndex == 0) return;
+        int spanStart = GetUnAbsoluteCharIndex(_completions[_completionIndex].SpanStart);
+        if (spanStart == 1) spanStart--;
+        int spanLength = CharIndex - spanStart;
+        string displayText = _completions[_completionIndex].DisplayText;
         
-        if (caretIndex == 0)
-            return "";
-
-        int start = caretIndex - 1;
-
-        while (start >= 0)
-        {
-            char c = code[start];
-
-            if (!IsIdentifierChar(c))
-                break;
-
-            start--;
-        }
-
-        // start stopped one before the beginning of the word
-        int wordStart = start + 1;
-
-        return code.Substring(wordStart, caretIndex - wordStart);
+        SetSelectedLine(Line.Remove(spanStart, spanLength));
+        AddToCharIndex(-spanLength);
+        SetSelectedLine(Line.Insert(spanStart, displayText));
+        AddToCharIndex(displayText.Length);
+        return;
     }
-
-    private static bool IsIdentifierChar(char c)
-    {
-        return char.IsLetterOrDigit(c) || c == '_';
-    }
-
 }
