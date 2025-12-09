@@ -39,6 +39,7 @@ public static class EditorMain
     private static Color _completionBackgroundLineColor = new Color(25, 23, 32);
     private static bool _started = false;
     private static int _completionIndex = 0;
+    private static char[] _nonCompleteChars = new[] { ';', ' ', '=', ')' };
     private static bool _completionsOutdated = false;
 
     private static float _keyTimer = 0;
@@ -89,6 +90,19 @@ public static class EditorMain
         }
         
         _started = true;
+    }
+    
+    public static void Update()
+    {
+        if (_codePosition.Y <= _codeMaxY)
+        {
+            _codePosition.Y = MathHelper.Lerp(_codePosition.Y, -(LineIndex * _lineSpacing) + (_gameWindow.ClientBounds.Height / 2), 12 * Time.DeltaTime);
+        }
+
+        if (_codePosition.Y > _codeMaxY)
+        {
+            _codePosition.Y = _codeMaxY;
+        }
     }
     
     public static void Draw(SpriteBatch spriteBatch)
@@ -169,7 +183,7 @@ public static class EditorMain
         
         Vector2 completionPosition = _cursorPosition * ScaleModifier + new Vector2(15 * ScaleModifier, 14 * ScaleModifier);
         
-        if (_completions != null && EditorMode == EditorMode.Editing && CharIndex != 0 && !_completionsOutdated)
+        if (_completions != null && EditorMode == EditorMode.Editing && !_completionsOutdated)
         {
             if (_completions.Count > 0)
             {
@@ -211,28 +225,16 @@ public static class EditorMain
 
     public static void SetCharIndex(int charIndex)
     {
-        int prevCharIndex = CharIndex;
         charIndex = VerifyCharIndex(charIndex);
+        if (charIndex != CharIndex) InitiateCompletions();
         CharIndex = charIndex;
-        
-        if (prevCharIndex != CharIndex)
-        {
-            _completionsOutdated = true;
-            InitiateCompletions();
-        }
     }
 
     public static void AddToCharIndex(int number)
     {
-        int prevCharIndex = CharIndex;
         CharIndex += number;
         CharIndex = VerifyCharIndex(CharIndex);
-        
-        if (prevCharIndex != CharIndex)
-        {
-            _completionsOutdated = true;
-            InitiateCompletions();
-        }
+        if (number != 0) InitiateCompletions();
     }
 
     public static int VerifyCharIndex(int charIndex)
@@ -252,29 +254,15 @@ public static class EditorMain
 
     public static void SetLineIndex(int lineIndex)
     {
-        int prevLineIndex = LineIndex;
         lineIndex = VerifyLineIndex(lineIndex);
         LineIndex = lineIndex;
         SetCharIndex(Line.Length);
-        
-        if (prevLineIndex != lineIndex)
-        {
-            _completionsOutdated = true;
-            InitiateCompletions();
-        }
     }
 
     public static void AddToLineIndex(int number)
     {
-        int prevLineIndex = LineIndex;
         LineIndex += number;
         LineIndex = VerifyLineIndex(LineIndex);
-        
-        if (prevLineIndex != LineIndex)
-        {
-            _completionsOutdated = true;
-            InitiateCompletions();
-        }
     }
 
     public static int VerifyLineIndex(int lineIndex)
@@ -299,22 +287,21 @@ public static class EditorMain
 
     public static void SetSelectedLine(string line, string pressedKeys = null)
     {
-        if (Line != line) UnsavedChanges = true;
         string prevLine = Line;
+        if (Line != line) UnsavedChanges = true;
         Line = line;
-        if (prevLine != line) _completionsOutdated = true;
         
-        if (pressedKeys == null) return;
         if (prevLine == Line) return;
-        
-        InitiateCompletions();
+        Finder.RegenerateOccurences();
     }
     
     private static void InitiateCompletions()
     {
-        if (string.IsNullOrWhiteSpace(Line)) return;
-        if (CharIndex == 0) return;
-        if (InputDistributor.PreviousChar == ';') return;
+        _completionsOutdated = true;
+        if (string.IsNullOrWhiteSpace(Line) ||
+                    CharIndex == 0 ||
+                    _nonCompleteChars.Contains(InputDistributor.PreviousChar))
+                    return;
         
         _ = Task.Run(async () =>
         {
@@ -334,8 +321,8 @@ public static class EditorMain
                 
             }
             
-            _completionsOutdated = false;
             _completionIndex = 0;
+            _completionsOutdated = false;
         });
     }
 
@@ -413,7 +400,6 @@ public static class EditorMain
                 {
                     RemoveLine(LineIndex);
                     SetCharIndex(LineLength);
-                    InitiateCompletions();
                     return;
                 }
                 
@@ -423,8 +409,6 @@ public static class EditorMain
                 SetCharIndex(LineLength);
                 SetSelectedLine(Line + temp);
             }
-
-            InitiateCompletions();
             return;
         }
 
@@ -433,7 +417,6 @@ public static class EditorMain
             int nextIndex = NextControlLeftArrowIndex();
             SetSelectedLine(Line.Remove(nextIndex, CharIndex - nextIndex));
             SetCharIndex(nextIndex);
-            InitiateCompletions();
             return;
         }
 
@@ -446,19 +429,17 @@ public static class EditorMain
             {
                 SetSelectedLine(Line.Remove(CharIndex - 1, 2));
                 AddToCharIndex(-1);
-                InitiateCompletions();
                 return;
             }
         }
 
         SetSelectedLine(Line.Remove(CharIndex - 1, 1));
         AddToCharIndex(-1);
-        InitiateCompletions();
     }
 
     public static void HandleTab(bool noCompletion = false)
     {
-        if (_completions != null && EditorMode != EditorMode.Moving && !noCompletion && CharIndex != 0)
+        if (_completions != null && EditorMode != EditorMode.Moving && !noCompletion && CharIndex != 0 && !Input.IsKeyDown(Keys.LeftShift) && !_completionsOutdated)
         {
             if (_completions.Count > 0)
             {
@@ -799,15 +780,7 @@ public static class EditorMain
             _textOpacity = (float)random.Next(0, 10) / 10;
         }
 
-        if (_codePosition.Y <= _codeMaxY)
-        {
-            _codePosition.Y = MathHelper.Lerp(_codePosition.Y, -(LineIndex * _lineSpacing) + (_gameWindow.ClientBounds.Height / 2), 12 * Time.DeltaTime);
-        }
-
-        if (_codePosition.Y > _codeMaxY)
-        {
-            _codePosition.Y = _codeMaxY;
-        }
+        
     }
     
     private static void HandleKeybindsMoving()
@@ -1084,19 +1057,19 @@ public static class EditorMain
     private static void DoCodeCompletion()
     {
         if (_completionIndex > _completions.Count - 1) { Console.WriteLine("Completionindex out of bounds"); return; }
-        if (CharIndex == 0) return;
-        if (_completionsOutdated) return;
-        int spanStart = GetUnAbsoluteCharIndex(_completions[_completionIndex].SpanStart);
-        if (spanStart == 1) spanStart--;
-        int spanLength = _completions[_completionIndex].SpanLength;
-        spanStart += CharIndex - spanLength * 2;
-        spanStart -= Line.Substring(CharIndex, LineLength - CharIndex).Length;
-        string displayText = _completions[_completionIndex].DisplayText;
+        CompletionResult result = _completions[_completionIndex];
+        Console.WriteLine($"Displaytext: {result.DisplayText}");
+        Console.WriteLine($"Spanstart: {result.SpanStart}");
+        Console.WriteLine($"Spanlength: {result.SpanLength}");
+        Console.WriteLine($"Span: {result.CompletionItem.Span}");
+        Console.WriteLine($"Sorttext: {result.CompletionItem.SortText}");
+        int startCharIndex = CharIndex - result.SpanLength;
+        SetSelectedLine(Line.Remove(startCharIndex, result.SpanLength));
+        AddToCharIndex(-result.SpanLength);
         
-        SetSelectedLine(Line.Remove(spanStart, spanLength));
-        AddToCharIndex(-spanLength);
-        SetSelectedLine(Line.Insert(spanStart, displayText));
-        AddToCharIndex(displayText.Length);
+        SetSelectedLine(Line.Insert(CharIndex, result.DisplayText));
+        AddToCharIndex(result.DisplayText.Length);
+        
         return;
     }
 }

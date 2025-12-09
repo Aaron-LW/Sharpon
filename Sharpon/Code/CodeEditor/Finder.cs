@@ -19,6 +19,8 @@ public static class Finder
     private static Color _finderBackgroundColor = new Color(45, 43, 52);
     private static Color _finderOutlineColor = new Color(60, 58, 67);
     private static Vector2 _cursorPosition;
+    private static TextBlock[] _occurences = [];
+    private static int _occurenceIndex = -1;
     
     public static void Start(GameWindow gameWindow)
     {
@@ -61,6 +63,35 @@ public static class Finder
         
         
         if (InputDistributor.SelectedInputReceiver() == InputDistributor.InputReceiver.Finder) spriteBatch.DrawString(font, "|", _cursorPosition, Color.White);
+        
+        for (int i = 0; i < _occurences.Length; i++)
+        {
+            if (Text == string.Empty) break;
+            Vector2 additivePosition = new Vector2(0, _finderHeight * (i + 1));
+            
+            spriteBatch.FillRectangle(new RectangleF(_finderPosition.X,
+                                      _finderPosition.Y + additivePosition.Y,
+                                      _finderWidth,
+                                      _finderHeight),
+                                      _finderBackgroundColor);
+            
+            spriteBatch.DrawRectangle(new RectangleF(_finderPosition.X,
+                                                     _finderPosition.Y + additivePosition.Y,
+                                                     _finderWidth,
+                                                     _finderHeight),
+                                                     i == _occurenceIndex ? Color.Gray : _finderOutlineColor,
+                                                     2f);
+                                                    
+            if (_occurences[i].LineIndex != null)
+            {
+                Vector2 textOccurencePosition = new Vector2(textPosition.X, textPosition.Y + additivePosition.Y);
+                Vector2 lineTextPosition = new Vector2(_finderPosition.X + _finderWidth - font.MeasureString(_occurences[i].LineIndex.ToString()).X - 10 * EditorMain.ScaleModifier, textPosition.Y + additivePosition.Y);
+                string text = EditorMain.Lines[(int)_occurences[i].LineIndex].Substring(_occurences[i].Start, _occurences[i].End - _occurences[i].Start);
+                
+                spriteBatch.DrawString(font, text, textOccurencePosition, Color.White);
+                spriteBatch.DrawString(font, _occurences[i].LineIndex.ToString(), lineTextPosition, Color.White);
+            }
+        }
     }
     
     public static TextBlock[] Find(string line)
@@ -73,7 +104,7 @@ public static class Finder
             if (i + Text.Length > line.Length) return textBlocks.ToArray();
             if (line.Substring(i, Text.Length) == Text)
             {
-                textBlocks.Add(new TextBlock(i, i + Text.Length));
+                textBlocks.Add(new TextBlock(i, i + Text.Length, null, null));
             }
         }
         
@@ -82,7 +113,9 @@ public static class Finder
     
     public static void SetText(string text)
     {
+        string previousText = Text;
         Text = text;
+        if (previousText != Text) RegenerateOccurences();
     }
     
     public static void SetCharIndex(int charIndex)
@@ -145,6 +178,33 @@ public static class Finder
                 Close();
             }
         }
+        
+        if (Input.IsKeyDown(Keys.LeftControl))
+        {
+            if (Input.IsKeyPressed(Keys.K))
+            {
+                _occurenceIndex++;
+                if (_occurenceIndex > _occurences.Length - 1) _occurenceIndex = _occurences.Length - 1;
+                UpdateEditorLineIndexByOccurence();
+            }
+            
+            if (Input.IsKeyPressed(Keys.I))
+            {
+                _occurenceIndex--;
+                if (_occurenceIndex < -1) _occurenceIndex = -1;
+                UpdateEditorLineIndexByOccurence();
+            }
+        }
+    }
+    
+    private static void UpdateEditorLineIndexByOccurence()
+    {
+        if (_occurenceIndex < 0 || _occurenceIndex > _occurences.Length) return;
+        if (_occurences[_occurenceIndex].LineIndex == null) return;
+        if (_occurences[_occurenceIndex].CharIndex == null) return;
+        
+        EditorMain.SetLineIndex((int)_occurences[_occurenceIndex].LineIndex);
+        EditorMain.SetCharIndex((int)_occurences[_occurenceIndex].CharIndex);
     }
     
     public static void Open()
@@ -156,5 +216,32 @@ public static class Finder
     public static void Close()
     {
         IsOpened = false;
+    }
+    
+    public static void RegenerateOccurences()
+    {
+        if (!IsOpened) return;
+        List<TextBlock> textBlocks = new List<TextBlock>();
+        _occurenceIndex = -1;
+        
+        //fuck you
+        int index = 0;
+        foreach (string line in EditorMain.Lines)
+        {
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (i + Text.Length > line.Length) break;
+                string substring = line.Substring(i, Text.Length);
+                
+                if (substring == Text)
+                {
+                    textBlocks.Add(new TextBlock(i, i + Text.Length, index, i));
+                }
+            }
+            
+            index++;
+        }
+        
+        _occurences = textBlocks.ToArray();
     }
 }

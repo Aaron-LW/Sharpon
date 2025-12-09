@@ -20,6 +20,7 @@ public static class Updater
         Input.Update();
         Time.Update(gameTime);
         InputHandler.Update();
+        EditorMain.Update();
         FileDialog.Update();
         NotificationManager.Update();
         PlayTimeCounter.Update();
