@@ -1063,6 +1063,8 @@ public static class EditorMain
         Console.WriteLine($"Spanlength: {result.SpanLength}");
         Console.WriteLine($"Span: {result.CompletionItem.Span}");
         Console.WriteLine($"Sorttext: {result.CompletionItem.SortText}");
+        Console.WriteLine($"Inserttext: {result.InsertText}");
+        Console.WriteLine($"{result.CompletionItem.IsComplexTextEdit}");
         int startCharIndex = CharIndex - result.SpanLength;
         SetSelectedLine(Line.Remove(startCharIndex, result.SpanLength));
         AddToCharIndex(-result.SpanLength);

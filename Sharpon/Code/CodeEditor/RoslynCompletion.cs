@@ -99,10 +99,13 @@ public class RoslynCompletionEngine : IDisposable
         ).ConfigureAwait(false);
 
         if (results == null) return Array.Empty<CompletionResult>();
+        var filteredItems = results.ItemsList
+                                    .Where(i => !i.IsComplexTextEdit)
+                                    .ToList();
 
-        var list = new List<CompletionResult>(results.ItemsList.Count);
+        var list = new List<CompletionResult>(filteredItems.Count);
 
-        foreach (var item in results.ItemsList)
+        foreach (var item in filteredItems)
         {
             var filterText = (item.FilterText ?? item.DisplayText) ?? string.Empty;
 
