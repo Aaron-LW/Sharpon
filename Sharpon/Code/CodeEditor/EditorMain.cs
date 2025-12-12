@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 public static class EditorMain
 {
     public static float BaseFontSize = 20;
-    public static float ScaleModifier => MathF.Round((float)_gameWindow.ClientBounds.Width / 1920, 2);
+    public static float ScaleModifier => _scaleToWindowWidth ? MathF.Round((float)_gameWindow.ClientBounds.Width / 1920, 2) : 1;
     public static string FilePath { get; private set; } = "";
     public static bool UnsavedChanges = false;
 
@@ -41,6 +41,7 @@ public static class EditorMain
     private static int _completionIndex = 0;
     private static char[] _nonCompleteChars = new[] { ';', ' ', '=', ')' };
     private static bool _completionsOutdated = false;
+    private static bool _scaleToWindowWidth = false;
 
     private static float _keyTimer = 0;
     private static bool _keyPressed = false;
@@ -1058,13 +1059,13 @@ public static class EditorMain
     {
         if (_completionIndex > _completions.Count - 1) { Console.WriteLine("Completionindex out of bounds"); return; }
         CompletionResult result = _completions[_completionIndex];
-        Console.WriteLine($"Displaytext: {result.DisplayText}");
-        Console.WriteLine($"Spanstart: {result.SpanStart}");
-        Console.WriteLine($"Spanlength: {result.SpanLength}");
-        Console.WriteLine($"Span: {result.CompletionItem.Span}");
-        Console.WriteLine($"Sorttext: {result.CompletionItem.SortText}");
-        Console.WriteLine($"Inserttext: {result.InsertText}");
-        Console.WriteLine($"{result.CompletionItem.IsComplexTextEdit}");
+        //Console.WriteLine($"Displaytext: {result.DisplayText}");
+        //Console.WriteLine($"Spanstart: {result.SpanStart}");
+        //Console.WriteLine($"Spanlength: {result.SpanLength}");
+        //Console.WriteLine($"Span: {result.CompletionItem.Span}");
+        //Console.WriteLine($"Sorttext: {result.CompletionItem.SortText}");
+        //Console.WriteLine($"Inserttext: {result.InsertText}");
+        //Console.WriteLine($"{result.CompletionItem.IsComplexTextEdit}");
         int startCharIndex = CharIndex - result.SpanLength;
         SetSelectedLine(Line.Remove(startCharIndex, result.SpanLength));
         AddToCharIndex(-result.SpanLength);

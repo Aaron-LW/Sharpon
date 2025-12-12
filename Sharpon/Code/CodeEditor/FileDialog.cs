@@ -403,7 +403,7 @@ public static class FileDialog
 
     public static string TryGetSolutionDirectoryInfo(string currentPath = null)
     {
-        Console.WriteLine(currentPath);
+        //Console.WriteLine(currentPath);
         var directory = new DirectoryInfo(currentPath ?? Directory.GetCurrentDirectory());
         while (directory != null && !directory.GetFiles("*.csproj").Any())
         {
