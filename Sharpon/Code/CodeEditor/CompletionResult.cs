@@ -9,4 +9,5 @@ public class CompletionResult
     public int SpanStart { get; set; }
     public int SpanLength { get; set; }
     public CompletionItem CompletionItem { get; set; }
+    public string Namespace { get; set; }
 }

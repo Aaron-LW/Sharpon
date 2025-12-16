@@ -32,7 +32,7 @@ public static class EditorMain
     private static float _textOpacity = 1;
     private static Vector2 _lineBlockPosition;
     private static bool _modeSwitchPressed;
-    private static RoslynCompletionEngine _roslynCompleter = new RoslynCompletionEngine();
+    private static RoslynCompletionEngine _roslynCompleter;
     private static IReadOnlyList<CompletionResult> _completions;
     private static CancellationTokenSource _completionCts;
     private static Color _completionBackgroundColor = new Color(20, 18, 27);
@@ -110,6 +110,7 @@ public static class EditorMain
     {
         SpriteFontBase font = FontSystem.GetFont(BaseFontSize * ScaleModifier);
         int cursorSpeed = 50;
+        var importedNamespaces = _roslynCompleter.GetImportedNamespaces();
 
         for (int i = 0; i < Lines.Count; i++)
         {
@@ -154,6 +155,7 @@ public static class EditorMain
             
             //spriteBatch.DrawString(font, Lines[i], new Vector2(_codePosition.X, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White);
             string[] words = Regex.Matches(Lines[i], @"\s+|'[^']*'|""[^""]*""|[^\w\s]|[\p{L}\p{N}_]+").Select(m => m.Value).ToArray();
+            
             
             for (int j = 0; j < words.Length; j++)
             {
@@ -213,8 +215,30 @@ public static class EditorMain
                                                                  font.MeasureString(_completions[i].DisplayText).X,
                                                                  font.MeasureString(_completions[i].DisplayText).Y - 3 * ScaleModifier),
                                                                  Color.Yellow * 0.7f);
+                                                                
+                        if (_completions[i].Namespace != null)
+                        {
+                            Vector2 namespacePosition = actualCompletionPosition + new Vector2(font.MeasureString(_completions[i].DisplayText).X + 15 * ScaleModifier, 0);
+                            Vector2 namespaceRectPosition = namespacePosition + new Vector2(-2 * ScaleModifier);
+                            
+                            spriteBatch.FillRectangle(new RectangleF(namespaceRectPosition.X,
+                                                                     namespaceRectPosition.Y,
+                                                                     font.MeasureString(_completions[i].Namespace).X + 4 * ScaleModifier,
+                                                                     font.MeasureString(_completions[i].Namespace).Y + 4 * ScaleModifier),
+                                                                     _completionBackgroundColor);
+                                                                     
+                            spriteBatch.DrawRectangle(new RectangleF(namespaceRectPosition.X - 2 * ScaleModifier,
+                                                                     namespaceRectPosition.Y - 2 * ScaleModifier,
+                                                                     font.MeasureString(_completions[i].Namespace).X + 8 * ScaleModifier,
+                                                                     font.MeasureString(_completions[i].Namespace).Y + 8 * ScaleModifier),
+                                                                     Color.RoyalBlue, 2);
+                                                                     
+                            Color namespaceColor = importedNamespaces.Contains(_completions[i].Namespace) ? Color.White : Color.Red;
+                            spriteBatch.DrawString(font, _completions[i].Namespace, namespacePosition, namespaceColor);
+                        }
                     }
                     
+                    //Color completionColor = _completions[i].CompletionItem.IsComplexTextEdit ? Color.Red : Color.White;
                     spriteBatch.DrawString(font, _completions[i].DisplayText, actualCompletionPosition, Color.White);
                 }
             }
@@ -371,8 +395,9 @@ public static class EditorMain
             //NotificationManager.CreateNotification("Loaded file: " + filePath, 3);
             SetCharIndex(LineLength);
             FilePath = filePath;
+            
+            if (_roslynCompleter == null) _roslynCompleter = new RoslynCompletionEngine(filePath);
             _roslynCompleter.OpenDocument(string.Join("\n", Lines));
-            _roslynCompleter.RefreshLoadedAssemblyReferences();
         }
         else
         {
@@ -1058,14 +1083,20 @@ public static class EditorMain
     private static void DoCodeCompletion()
     {
         if (_completionIndex > _completions.Count - 1) { Console.WriteLine("Completionindex out of bounds"); return; }
+        
+        if (_completions[_completionIndex].CompletionItem.IsComplexTextEdit)
+        {
+            string containingNamespace = _roslynCompleter.TryExtractNamespaceFromInsertText(_completions[_completionIndex].InsertText);
+            if (!_roslynCompleter.GetImportedNamespaces().Contains(containingNamespace))
+            {
+                Lines.Insert(0, "using " + containingNamespace);
+                AddToLineIndex(1);
+                InitiateCompletions();
+            }
+            return;
+        }
+        
         CompletionResult result = _completions[_completionIndex];
-        //Console.WriteLine($"Displaytext: {result.DisplayText}");
-        //Console.WriteLine($"Spanstart: {result.SpanStart}");
-        //Console.WriteLine($"Spanlength: {result.SpanLength}");
-        //Console.WriteLine($"Span: {result.CompletionItem.Span}");
-        //Console.WriteLine($"Sorttext: {result.CompletionItem.SortText}");
-        //Console.WriteLine($"Inserttext: {result.InsertText}");
-        //Console.WriteLine($"{result.CompletionItem.IsComplexTextEdit}");
         int startCharIndex = CharIndex - result.SpanLength;
         SetSelectedLine(Line.Remove(startCharIndex, result.SpanLength));
         AddToCharIndex(-result.SpanLength);
