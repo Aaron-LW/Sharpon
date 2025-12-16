@@ -947,7 +947,7 @@ public static class EditorMain
         }
     }
 
-    private static char[] _stopCharsRight = new char[] { ')', '}', ']', '.', ',', '/', ' '};
+    private static char[] _stopCharsRight = new char[] { ')', '}', ']', '.', ',', '/', ' ', '>'};
     private static int NextControlRightArrowIndex()
     {
         if (CharIndex == LineLength) return LineLength;
@@ -967,7 +967,7 @@ public static class EditorMain
         return LineLength;
     }
 
-    private static char[] _stopCharsLeft = new char[] { '(', '.', ',', '[', '{', '/', ' '};
+    private static char[] _stopCharsLeft = new char[] { '(', '.', ',', '[', '{', '/', ' ', '<'};
     public static int NextControlLeftArrowIndex(string line = null, int charIndex = -1)
     {
         if (line == null) line = Line;

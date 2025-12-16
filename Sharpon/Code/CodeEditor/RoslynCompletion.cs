@@ -22,6 +22,7 @@ public class RoslynCompletionEngine : IDisposable
     private DocumentId _documentId;
     private readonly string _projectName = "Sharpon";
     private bool _isAdhoc;
+    private bool _openedFileIsDocument;
 
     private static readonly MetadataReference CSharpFeaturesReference = MetadataReference.CreateFromFile(typeof(Microsoft.CodeAnalysis.CSharp.Formatting.CSharpFormattingOptions).Assembly.Location);
     //private static readonly MetadataReference WorkspacesFeaturesReference = MetadataReference.CreateFromFile(typeof(Microsoft.CodeAnalysis.Features.Document).Assembly.Location);
@@ -82,12 +83,36 @@ public class RoslynCompletionEngine : IDisposable
     
     private void OpenDocumentMSBuild()
     {
-        string filePath = EditorMain.FilePath;
-        var project = LoadOrGetProjectAsync(filePath).GetAwaiter().GetResult();
+        string filePath = Path.GetFullPath(EditorMain.FilePath);
+
+        if (Path.GetExtension(filePath) != ".cs")
+        {
+            _documentId = null;
+            _openedFileIsDocument = false;
+            return;
+        }
+
+        var project = LoadOrGetProjectAsync(filePath)
+            .GetAwaiter()
+            .GetResult();
+
         _project = project;
-        var document = project.Documents.First(d => string.Equals(d.FilePath, filePath, StringComparison.OrdinalIgnoreCase));
+
+        var document = project.Documents
+            .FirstOrDefault(d =>
+                d.FilePath != null &&
+                Path.GetFullPath(d.FilePath)
+                    .Equals(filePath, StringComparison.OrdinalIgnoreCase));
+
+        if (document == null)
+        {
+            throw new InvalidOperationException("File is not part of the project");
+        }
+
         _documentId = document.Id;
+        _openedFileIsDocument = true;
     }
+
     
     private async Task<Project> LoadOrGetProjectAsync(string filePath)
     {
@@ -96,9 +121,17 @@ public class RoslynCompletionEngine : IDisposable
         
         var csproj = GetNearestCsprojFilePath(filePath);
         if (csproj == null) throw new InvalidOperationException("File is not part of a c# project");
+
+        var loaded = FindLoadedProjectByPath(csproj);
+        if (loaded != null) return loaded;
         
         var project = await ((MSBuildWorkspace)_workspace).OpenProjectAsync(csproj);
         return project;
+    }
+
+    private Project FindLoadedProjectByPath(string csprojPath)
+    {
+        return _workspace.CurrentSolution.Projects.FirstOrDefault(p => string.Equals(p.FilePath, csprojPath, StringComparison.OrdinalIgnoreCase));
     }
     
     private Project FindProjectContainingFile(string filePath)
@@ -356,6 +389,7 @@ public class RoslynCompletionEngine : IDisposable
     
     public HashSet<string> GetImportedNamespaces()
     {
+        if (!_openedFileIsDocument) return null;
         var document = _workspace.CurrentSolution.GetDocument(_documentId);
         var root = document.GetSyntaxRootAsync().GetAwaiter().GetResult();
         
