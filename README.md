@@ -37,6 +37,5 @@ You cant type in moving mode
 *things I wanna add that are currently not in Sharpon* <br>
 - Copy and paste
 - Selecting
-- Code completion
 - actual not hardcoded syntax highlighting
 - Error highlighting (idk what its called)
