@@ -245,6 +245,27 @@ public static class EditorMain
                             Color namespaceColor = importedNamespaces.Contains(_completions[i].Namespace) ? Color.White : Color.Red;
                             spriteBatch.DrawString(font, _completions[i].Namespace, namespacePosition, namespaceColor);
                         }
+                        
+                        if (_completions[i].Description != null)
+                        {
+                            string description = _completions[i].Description;
+                            Vector2 descriptionPosition = completionPosition - new Vector2(0, font.MeasureString(description).Y + 10 * ScaleModifier);
+                            
+                            spriteBatch.FillRectangle(new RectangleF(descriptionPosition.X - 2 * ScaleModifier,
+                                                                     descriptionPosition.Y - 2 * ScaleModifier,
+                                                                     font.MeasureString(description).X + 4 * ScaleModifier,
+                                                                     font.MeasureString(description).Y + 4 * ScaleModifier),
+                                                                     _completionBackgroundColor);
+                                                                     
+                            spriteBatch.DrawRectangle(new RectangleF(descriptionPosition.X - 3 * ScaleModifier,
+                                                                     descriptionPosition.Y - 3 * ScaleModifier,
+                                                                     font.MeasureString(description).X + 6 * ScaleModifier,
+                                                                     font.MeasureString(description).Y + 6 * ScaleModifier),
+                                                                     Color.RoyalBlue, 2);
+                                                                     
+                                                                     
+                            spriteBatch.DrawString(font, description, descriptionPosition, Color.White);
+                        }
                     }
                     
                     //Color completionColor = _completions[i].CompletionItem.IsComplexTextEdit ? Color.Red : Color.White;
