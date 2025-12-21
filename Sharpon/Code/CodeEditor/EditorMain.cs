@@ -154,14 +154,21 @@ public static class EditorMain
             }
             
             //spriteBatch.DrawString(font, Lines[i], new Vector2(_codePosition.X, _codePosition.Y + (i * _lineSpacing)) * ScaleModifier, Color.White);
-            string[] words = Regex.Matches(Lines[i], @"\s+|'[^']*'|""[^""]*""|[^\w\s]|[\p{L}\p{N}_]+").Select(m => m.Value).ToArray();
+            string[] words = Regex.Matches(Lines[i], @"//[^\n]*|\s+|'[^']*'|""[^""]*""|[^\w\s]|[\p{L}\p{N}_]+").Select(m => m.Value).ToArray();
             
             
             for (int j = 0; j < words.Length; j++)
             {
                 string leadingString = string.Join("", words.Take(j));
                 
-                TextToColor.Lookup.TryGetValue(words[j], out Color color);
+                string lookupString = words[j];
+                
+                if (lookupString.Length > 1)
+                {
+                    if (lookupString[0] == '/' && lookupString[1] == '/') lookupString = "//";
+                }
+
+                TextToColor.Lookup.TryGetValue(lookupString, out Color color);
                 if (color == Color.Transparent)
                 {
                     if (words[j][0] == '"' || words[j][0].ToString() == "'")

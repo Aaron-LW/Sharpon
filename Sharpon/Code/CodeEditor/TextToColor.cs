@@ -60,6 +60,7 @@ public static class TextToColor
         { "var", Color.RoyalBlue },
         { "continue", Color.Purple },
         { "break", Color.Purple },
-        { "namespace", Color.RoyalBlue }
+        { "namespace", Color.RoyalBlue },
+        { "//", Color.SpringGreen }
     };
 }
