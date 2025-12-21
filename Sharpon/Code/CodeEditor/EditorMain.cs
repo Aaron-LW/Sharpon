@@ -110,7 +110,9 @@ public static class EditorMain
     {
         SpriteFontBase font = FontSystem.GetFont(BaseFontSize * ScaleModifier);
         int cursorSpeed = 50;
-        var importedNamespaces = _roslynCompleter.GetImportedNamespaces();
+        var importedNamespaces = new HashSet<string>();
+        
+        if (_roslynCompleter != null) importedNamespaces = _roslynCompleter.GetImportedNamespaces();
 
         for (int i = 0; i < Lines.Count; i++)
         {
@@ -393,6 +395,7 @@ public static class EditorMain
             if (UnsavedChanges) SaveFile(FilePath);
             
             //Lines = Convert.ToHexString(File.ReadAllBytes(filePath)).Split(["\r\n", "\n"], StringSplitOptions.None).ToList();
+            Lines.Clear();
             Lines = File.ReadAllText(filePath).Split(["\r\n", "\n"], StringSplitOptions.None).ToList();
             if (Lines.Count - 1 < LineIndex)
             {

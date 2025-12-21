@@ -62,24 +62,45 @@ public class RoslynCompletionEngine : IDisposable
             OpenDocumentMSBuild();
             return;
         }
-        
+
         var adhoc = (AdhocWorkspace)_workspace;
-        
-        if (_documentId != null)
+
+        string filePath = Path.GetFullPath(EditorMain.FilePath);
+        string fileName = Path.GetFileName(filePath);
+
+        var existingDoc = _project.Documents
+            .FirstOrDefault(d =>
+                d.FilePath != null &&
+                Path.GetFullPath(d.FilePath)
+                    .Equals(filePath, StringComparison.OrdinalIgnoreCase));
+
+        if (existingDoc != null)
         {
-            var document = adhoc.CurrentSolution.GetDocument(_documentId);
-            var sourceText = SourceText.From(initialText);
-            var newDocument = document.WithText(sourceText);
-            adhoc.TryApplyChanges(newDocument.Project.Solution);
+            var newDoc = existingDoc.WithText(SourceText.From(initialText));
+            adhoc.TryApplyChanges(newDoc.Project.Solution);
+
+            _documentId = existingDoc.Id;
             return;
         }
-        
-        var documentId = DocumentId.CreateNewId(_project.Id, debugName: "EditorBuffer.cs");
-        var documentInfo = DocumentInfo.Create(documentId, "EditorBuffer.cs", null, SourceCodeKind.Regular, TextLoader.From(TextAndVersion.Create(SourceText.From(initialText), VersionStamp.Create())));
+
+        var documentId = DocumentId.CreateNewId(_project.Id, debugName: fileName);
+
+        var documentInfo = DocumentInfo.Create(
+            documentId,
+            fileName,
+            loader: TextLoader.From(
+                TextAndVersion.Create(SourceText.From(initialText), VersionStamp.Create())
+            ),
+            filePath: filePath,
+            sourceCodeKind: SourceCodeKind.Regular
+        );
+
         adhoc.AddDocument(documentInfo);
         _documentId = documentId;
+
         _project = adhoc.CurrentSolution.GetProject(_project.Id);
     }
+
     
     private void OpenDocumentMSBuild()
     {
@@ -98,6 +119,7 @@ public class RoslynCompletionEngine : IDisposable
 
         _project = project;
 
+        // Beste, sichere Variante
         var document = project.Documents
             .FirstOrDefault(d =>
                 d.FilePath != null &&
@@ -106,12 +128,17 @@ public class RoslynCompletionEngine : IDisposable
 
         if (document == null)
         {
-            throw new InvalidOperationException("File is not part of the project");
+            Console.WriteLine("WARN: File is not part of project → fallback Adhoc");
+
+            _isAdhoc = true;
+            OpenDocument(File.ReadAllText(filePath));
+            return;
         }
 
         _documentId = document.Id;
         _openedFileIsDocument = true;
     }
+
 
     
     private async Task<Project> LoadOrGetProjectAsync(string filePath)
