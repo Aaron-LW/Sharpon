@@ -1,3 +1,4 @@
+using System.Collections;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -241,8 +242,12 @@ public static class EditorMain
                                                                      font.MeasureString(_completions[i].Namespace).X + 8 * ScaleModifier,
                                                                      font.MeasureString(_completions[i].Namespace).Y + 8 * ScaleModifier),
                                                                      Color.RoyalBlue, 2);
-                                                                     
-                            Color namespaceColor = importedNamespaces.Contains(_completions[i].Namespace) ? Color.White : Color.Red;
+                            
+                            Color namespaceColor = Color.White;
+                            if (importedNamespaces != null)
+                            {
+                                namespaceColor = importedNamespaces.Contains(_completions[i].Namespace) ? Color.White : Color.Red;
+                            }
                             spriteBatch.DrawString(font, _completions[i].Namespace, namespacePosition, namespaceColor);
                         }
                         
